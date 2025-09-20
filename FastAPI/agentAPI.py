@@ -31,4 +31,4 @@ async def agent_query(user_request: UserQueryRequest):
     logger.info(f"Total time taken: {endTime - startTime} seconds")
 
     # Return the response as a JSON object
-    return {"response: ": response}
+    return {"response": response}
