@@ -1,4 +1,4 @@
-import useAutosize from '@/hooks/useAutosize';
+import useAutosize from '@/hooks/useAutoSize';
 import sendIcon from '@/assets/images/send.svg';
 
 function ChatInput({ newMessage, isLoading, setNewMessage, submitNewMessage }) {
