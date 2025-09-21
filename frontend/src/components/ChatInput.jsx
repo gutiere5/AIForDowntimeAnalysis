@@ -5,7 +5,7 @@ function ChatInput({ newMessage, isLoading, setNewMessage, submitNewMessage }) {
   const textareaRef = useAutosize(newMessage);
 
   function handleKeyDown(e) {
-    if(e.keyCode === 13 && !e.shiftKey && !isLoading) {
+    if(e.key === 'Enter' && !e.shiftKey && !isLoading) {
       e.preventDefault();
       submitNewMessage();
     }
