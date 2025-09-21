@@ -11,7 +11,7 @@ function Chatbot() {
   const [messages, setMessages] = useImmer([]);
   const [newMessage, setNewMessage] = useState('');
 
-  const isLoading = messages.length && messages[messages.length - 1].loading;
+  const isLoading = messages.length > 0 && messages[messages.length - 1].loading;
 
   async function submitNewMessage() {
     const trimmedMessage = newMessage.trim();
