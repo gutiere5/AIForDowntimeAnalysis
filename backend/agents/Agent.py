@@ -27,13 +27,18 @@ class Agent:
 
     def generate_response(self) -> str:
         prompt = self._build_prompt()
+        print("Sending prompt to OpenAI:", json.dumps(prompt, indent=2))  # Debugging line
+
         response = self.openai_client.chat.completions.create(
             model=self.model,
             messages=prompt,
             temperature=0.7,
             max_tokens=150
         )
-        reply = response.choices[0].message['content']
+
+        reply = response.choices[0].message.content
+
+        print("Received response from OpenAI:", reply)  # Debugging line
         self.conversation_history.append({"role": "assistant", "content": reply})
         return reply
 
