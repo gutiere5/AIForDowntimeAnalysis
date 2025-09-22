@@ -23,31 +23,24 @@ function Chatbot() {
     ]);
     setNewMessage('');
 
-    let chatIdOrNew = chatId;
     try {
-      if (!chatId) {
-        const { id } = await api.createChat();
-        setChatId(id);
-        chatIdOrNew = id;
-      }
+        const response = await api.sendChatMessage(trimmedMessage);
+        console.log("Response received:", response);
 
-      const stream = await api.sendChatMessage(chatIdOrNew, trimmedMessage);
-      for await (const textChunk of parseSSEStream(stream)) {
+        // Update message with response content
         setMessages(draft => {
-          draft[draft.length - 1].content += textChunk;
+          const lastMessage = draft[draft.length - 1];
+          lastMessage.content = response.response || "No response content found";
+          lastMessage.loading = false;
         });
-      }
-      setMessages(draft => {
-        draft[draft.length - 1].loading = false;
-      });
-    } catch (err) {
-      console.log(err);
-      setMessages(draft => {
-        draft[draft.length - 1].loading = false;
-        draft[draft.length - 1].error = true;
-      });
-    }
+  } catch (err) {
+        console.error("Error:", err);
+        setMessages(draft => {
+          draft[draft.length - 1].loading = false;
+          draft[draft.length - 1].error = true;
+        });
   }
+}
 
   return (
     <div className='relative grow flex flex-col gap-6 pt-6'>

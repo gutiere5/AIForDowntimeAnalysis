@@ -1,29 +1,26 @@
-const BASE_URL = import.meta.env.VITE_API_URL;
+const BASE_URL = "http://localhost:8000";
 
-async function createChat() {
-  const res = await fetch(BASE_URL + '/chats', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    return Promise.reject({ status: res.status, data });
-  }
-  return data;
-}
+    async function sendChatMessage(user_message) {
+      const response = await fetch(BASE_URL + `/agent_query`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: user_message })
+      });
+      if (!response.ok) {
+        return Promise.reject({ status: response.status, data: await response.json() });
+      }
 
-async function sendChatMessage(chatId, message) {
-  const res = await fetch(BASE_URL + `/chats/${chatId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message })
-  });
-  if (!res.ok) {
-    return Promise.reject({ status: res.status, data: await res.json() });
-  }
-  return res.body;
-}
+      const data = await response.json();
+      console.log("API Response:", data);
 
-export default {
-  createChat, sendChatMessage
-};
+      // Check if we have a response
+      if (!data || !data.response) {
+        console.warn("Empty or invalid response received");
+      }
+
+      return data;
+    }
+
+    export default {
+      sendChatMessage
+    };
