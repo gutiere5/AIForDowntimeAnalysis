@@ -2,7 +2,7 @@ from typing import List, Dict, Any
 from openai import OpenAI
 import json
 
-class Agent:
+class agent:
     def __init__(self, api_key: str):
         self.name = "AI Agent"
         self.tools: List[Dict[str, Any]] = []
@@ -25,22 +25,26 @@ class Agent:
     def receive_message(self, message: str):
         self.conversation_history.append({"role": "user", "content": message})
 
-    def generate_response(self) -> str:
+    async def generate_response(self):
         prompt = self._build_prompt()
         print("Sending prompt to OpenAI:", json.dumps(prompt, indent=2))  # Debugging line
 
-        response = self.openai_client.chat.completions.create(
+        stream = self.openai_client.chat.completions.create(
             model=self.model,
             messages=prompt,
             temperature=0.7,
-            max_tokens=150
+            stream=True
         )
 
-        reply = response.choices[0].message.content
+        full_response = ""
+        for chunk in stream:
+            content = chunk.choices[0].delta.content or ""
+            if content:
+                full_response += content
+                yield f"data: {content}\n\n"
 
-        print("Received response from OpenAI:", reply)  # Debugging line
-        self.conversation_history.append({"role": "assistant", "content": reply})
-        return reply
+        self.conversation_history.append({"role": "assistant", "content": full_response})
+        yield "data: [DONE]\n\n"
 
     def _build_prompt(self) -> List[Dict[str, str]]:
         system_message = {

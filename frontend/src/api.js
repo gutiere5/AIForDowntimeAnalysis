@@ -7,18 +7,10 @@ const BASE_URL = "http://localhost:8000";
         body: JSON.stringify({ query: user_message })
       });
       if (!response.ok) {
-        return Promise.reject({ status: response.status, data: await response.json() });
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log("API Response:", data);
-
-      // Check if we have a response
-      if (!data || !data.response) {
-        console.warn("Empty or invalid response received");
-      }
-
-      return data;
+      return response.body;
     }
 
     export default {
