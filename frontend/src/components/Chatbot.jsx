@@ -52,10 +52,9 @@ function Chatbot() {
   return (
     <div className='relative grow flex flex-col gap-6 pt-6'>
       {messages.length === 0 && (
-        <div className='mt-3 font-urbanist text-primary-blue text-xl font-light space-y-2'>
-          <p>👋 Welcome!</p>
-          <p>I can summarize and analyze downtime records</p>
-          <p>Ask me anything relating to downtime.</p>
+        <div className='mt-3 font-urbanist text-primary-blue text-xl justify-center font-light space-y-2'>
+          <p>Welcome to [Chatbot Name]!</p>
+          <p>Here to analyze any downtime request</p>
         </div>
       )}
       <ChatMessages
