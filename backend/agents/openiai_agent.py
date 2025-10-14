@@ -2,14 +2,16 @@ from typing import List, Dict, Any
 from openai import OpenAI
 import json
 import logging
-from backend.agents.query_database import query_database
+from backend.tools.query_database import query_database
+from backend.tools.trend_analysis import analyze_trend
 
-class Agent:
+class AgentOpenAI:
     def __init__(self, api_key: str):
-        self.name = "AI Agent"
+        self.name = "Conversational Agent"
         self.tools: List[Dict[str, Any]] = []
         self.tool_functions = {
-            "query_database": query_database
+            "query_database": query_database,
+            "analyze_trend": analyze_trend
         }
         self.conversation_history: List[Dict[str, str]] = []
         self.model = "gpt-4o-mini"
@@ -20,10 +22,11 @@ class Agent:
         1. Analyze each query to determine if external data is needed - only use tools when necessary
         2. When database access is required, use ONLY SELECT statements with the query_database tool
         3. If a query can be answered without database access, respond directly
-        4. After receiving data, provide a concise, helpful response
-        5. Be friendly and professional
-        6. If you don't know something, admit it honestly
-        7. Clearly explain any errors that occur during tool use
+        4. When users ask about trends or patterns in data, first query the database, then analyze the data using the analyze_trend tool
+        5. After receiving data, provide a concise, helpful response that includes trend analysis results when applicable
+        6. Be friendly and professional
+        7. If you don't know something, admit it honestly
+        8. Clearly explain any errors that occur during tool use
         Remember: Only use the database when needed, and never use INSERT, UPDATE, DELETE or other modifying SQL statements.
         """
 
@@ -116,6 +119,12 @@ class Agent:
         if function_name in self.tool_functions:
             if function_name == "query_database":
                 result = self.tool_functions[function_name](function_args.get("query", ""))
+            elif function_name == "analyze_trend":
+                result = self.tool_functions[function_name](
+                    data=function_args.get("data", []),
+                    value_column=function_args.get("value_column", ""),
+                    time_column=function_args.get("time_column")
+                )
             else:
                 result = self.tool_functions[function_name](**function_args)
 
