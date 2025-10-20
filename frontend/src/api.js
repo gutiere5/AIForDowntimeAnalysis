@@ -3,7 +3,10 @@ const BASE_URL = "http://localhost:8000";
     async function sendChatMessage(user_message) {
       const response = await fetch(BASE_URL + `/agent_query`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream'
+        },
         body: JSON.stringify({ query: user_message })
       });
       if (!response.ok) {
@@ -13,6 +16,4 @@ const BASE_URL = "http://localhost:8000";
       return response.body;
     }
 
-    export default {
-      sendChatMessage
-    };
+    export default { sendChatMessage };

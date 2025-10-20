@@ -99,7 +99,8 @@
 
 @layer base {
   body, html, #root {
-    @apply text-main-text h-full;
+      @apply text-main-text h-full;
+      height: 100%;
   }
 
   ::-webkit-scrollbar {

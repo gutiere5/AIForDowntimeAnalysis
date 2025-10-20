@@ -20,16 +20,11 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-# Adding tools, move somewhere else later
-
 # Initialize FastAPI app
 app = FastAPI(title="Agent Query API", description="API to handle user queries for an agent", version="1.0.0")
 
 # Define Main LLM Agent/Model
 main_agent = AgentOrchestrator(api_key=HUGGINGFACE_TOKEN)
-# main_agent = AgentHuggingFace(api_key=HUGGINGFACE_TOKEN)
-# main_agent.add_tool(query_database_tool)
-# main_agent.add_tool(analyze_trend_tool)
 
 origins = [
     "http://localhost:5173"
@@ -56,11 +51,8 @@ class UserQueryRequest(BaseModel):
 @app.post("/agent_query")
 async def agent_query(user_request: UserQueryRequest):
     logger.info(f"Received user request: {user_request.query}")
-    # main_agent.receive_message(user_request.query)
 
     return StreamingResponse(
-        #main_agent.generate_test_response(),
-        # main_agent.generate_response(),
         main_agent.process_query(user_request.query),
         media_type="text/event-stream"
     )
