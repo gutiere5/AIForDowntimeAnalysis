@@ -22,6 +22,7 @@ function ChatInput({ newMessage, isLoading, setNewMessage, submitNewMessage }) {
             value={newMessage}
             onChange={e => setNewMessage(e.target.value)}
             onKeyDown={handleKeyDown}
+            placeholder={isLoading ? 'Waiting for response...' : 'Type your message...'}
           />
           <button
             className='absolute top-1/2 -translate-y-1/2 right-3 p-1 rounded-md hover:bg-primary-blue/20'
