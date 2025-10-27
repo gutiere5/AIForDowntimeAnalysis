@@ -1,7 +1,9 @@
 import json
-from .query_database import query_database as _query_database_impl
+from .vector_retriever import VectorDBRetriever
 
 AVAILABLE_TOOLS = {}
+
+vector_retriever_instance = VectorDBRetriever(collection_name="log_embeddings")
 
 def register_tool(func):
     """Decorator to register a tool function."""
@@ -9,33 +11,12 @@ def register_tool(func):
     return func
 
 @register_tool
-def get_weather_forecast(location: str) -> str:
+def retrieve_log_entries(query: str, top_k: int = 15) -> str:
     """
-    Get the weather forecast for a specifi ed location.
+    Retrieves the top_k most relevant log entries from the vector database based on a natural language query.
     Args:
-        location (str): The city and state, e.g., 'Holland, MI'.
+        query (str): The natural language query.
+        top_k (int): The number of log entries to retrieve.
     """
-    if "holland, mi" in location.lower():
-        return json.dumps({
-            "location": "Holland, MI",
-            "forecast": "Sunny",
-            "high_temp": "75°F",
-            "low_temp": "55°F",
-            "humidity": "60%"
-        })
-    return json.dumps({
-        "location": location,
-        "forecast": "Data not available",
-        "high_temp": "N/A",
-        "low_temp": "N/A",
-        "humidity": "N/A"
-    })
-
-@register_tool
-def query_database(query: str) -> str:
-    """
-    Temporary registered tool wrapper for executing SELECT queries.
-    Delegates to the implementation in `query_database.py` which currently returns mock data.
-    """
-    result = _query_database_impl(query)
-    return json.dumps(result)
+    results = vector_retriever_instance.retrieve(query, top_k)
+    return json.dumps(results)
