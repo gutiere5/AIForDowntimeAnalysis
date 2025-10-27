@@ -72,8 +72,10 @@ class AgentOrchestrator:
           - synthesizer
         """
         system_instructions = (
-            "You are a routing model. Decide if the user's query requires calling one of the provided tools. "
+            "You are a routing model. Your task is to decide whether a user's query can be answered by calling a tool. "
+            "If the user is asking about downtime, machine failures, error codes, or log entries, you should use the `retrieve_log_entries` tool to get relevant context. "
             "If a tool is needed, respond EXACTLY in the format: Call: tool_name(param_name=\"value\", ...). "
+            "If the query is a general greeting or a question that does not require a tool, respond with 'synthesizer'. "
             "Check the conversation history: if the tool has already been called with the same arguments, respond with 'synthesizer' instead. "
             "After a tool has been called, respond with 'synthesizer' on the next turn. "
             "Do not add extra commentary."
@@ -104,8 +106,12 @@ class AgentOrchestrator:
     def _call_synthesizer_model(self, original_query: str, conversation_history: str):
         """Streams a synthesized final answer to the client."""
         system_message = (
-            "You are a helpful assistant. Synthesize a concise, direct answer using any tool outputs provided. "
-            "If tool outputs contain JSON, interpret them but do not just repeat raw JSON unless asked." )
+            "You are a helpful assistant. Your primary task is to answer user queries based on the provided tool outputs. "
+            "When log entries are retrieved, use them as the source of truth for your answer. "
+            "Synthesize a concise and direct answer from the log data. Format the information clearly, for example, using bullet points. "
+            "If the tool output indicates no relevant logs were found, state that clearly to the user. "
+            "Do not just repeat raw JSON; interpret and present the information in a user-friendly way."
+        )
         user_message = (
             f"Original User Query:\n{original_query}\n\nTool Execution History (may be empty):\n{conversation_history}\n\nProvide the best final answer now." )
         messages = [
