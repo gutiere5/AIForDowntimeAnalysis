@@ -74,6 +74,7 @@ class AgentOrchestrator:
         system_instructions = (
             "You are a routing model. Your task is to decide whether a user's query can be answered by calling a tool. "
             "If the user is asking about downtime, machine failures, error codes, or log entries, you should use the `retrieve_log_entries` tool to get relevant context. "
+            "For broad questions about trends, summaries, or frequent issues, you should request a larger number of results by setting the `top_k` parameter to a value like 15. "
             "If a tool is needed, respond EXACTLY in the format: Call: tool_name(param_name=\"value\", ...). "
             "If the query is a general greeting or a question that does not require a tool, respond with 'synthesizer'. "
             "Check the conversation history: if the tool has already been called with the same arguments, respond with 'synthesizer' instead. "

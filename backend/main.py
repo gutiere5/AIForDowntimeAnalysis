@@ -69,34 +69,25 @@ async def agent_query(user_request: UserQueryRequest):
 @app.post("/index_log")
 async def index_log(log_entry: LogEntry):
     logger.info(f"Received log entry for indexing: {log_entry.dict()}")
-    log_entry_json = json.dumps(log_entry.dict())
-    # The agent orchestrator expects a query string, so we'll format it as a tool call
-    tool_call_query = f"Call: index_log_entry(log_entry_json='''{log_entry_json}''')"
-    
-    # Process the query through the agent orchestrator
-    # We expect a direct tool execution here, not a conversational response
-    response_generator = main_agent.process_query(tool_call_query)
-    
-    # Extract the final response from the generator
-    final_response = ""
-    async for chunk in response_generator:
-        # Assuming the tool output is returned as a single chunk or the last chunk
-        try:
-            data = json.loads(chunk.replace("data: ", ""))
-            if data.get("type") == "chunk":
-                final_response += data.get("content", "")
-            elif data.get("type") == "done":
-                break
-        except json.JSONDecodeError:
-            # Handle cases where chunk is not valid JSON, e.g., direct tool output
-            final_response += chunk.replace("data: ", "")
-
-    # The tool itself returns a JSON string, so we need to parse it
     try:
-        tool_output = json.loads(final_response)
-        return JSONResponse(content=tool_output)
-    except json.JSONDecodeError:
-        return JSONResponse(content={"status": "error", "message": f"Unexpected response from tool: {final_response}"}, status_code=500)
+        from backend.tools.log_processor import log_to_text, generate_embedding
+        from backend.vector_chroma_db.chroma_client import ChromaClient
+
+        chroma_client_instance = ChromaClient(collection_name="log_embeddings")
+        
+        log_entry_dict = log_entry.dict()
+        text_representation = log_to_text(log_entry_dict)
+        embedding = generate_embedding(text_representation)
+
+        if embedding:
+            chroma_client_instance.add_log_embedding(text_representation, embedding, metadata=log_entry_dict)
+            return JSONResponse(content={"status": "success", "message": "Log entry indexed successfully."})
+        else:
+            return JSONResponse(content={"status": "error", "message": "Failed to generate embedding for log entry."}, status_code=500)
+    except Exception as e:
+        logger.error(f"Error indexing log entry: {e}")
+        return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
+
 
 
 @app.post("/search_logs")
