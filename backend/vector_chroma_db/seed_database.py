@@ -15,8 +15,8 @@ def seed_database():
     """Reads sample logs and sends them to the /index_log endpoint."""
     time.sleep(5) # Wait for the server to start
     try:
-        with open(LOGS_FILE, "r") as f:
-            logs = json.load(f)
+        with open(LOGS_FILE, "r") as file:
+            logs = json.load(file)
     except FileNotFoundError:
         print(f"Error: {LOGS_FILE} not found.")
         return

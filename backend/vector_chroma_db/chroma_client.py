@@ -88,7 +88,7 @@ class ChromaClient:
 
 # Example Usage
 if __name__ == "__main__":
-    from ..log_processor import log_to_text, generate_embedding
+    from backend.tools.log_processor import log_to_text, generate_embedding
 
     # Initialize ChromaClient
     chroma_client = ChromaClient(collection_name="downtime_logs")
