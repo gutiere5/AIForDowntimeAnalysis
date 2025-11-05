@@ -24,6 +24,8 @@ export async function* parseSSEStream(stream) {
             } else if (evt.type === 'done') {
               yield { type: 'done' };
               return;
+            } else if (evt.type === 'conversation_id' && typeof evt.id === 'string') {
+              yield { type: 'conversation_id', id: evt.id };
             } else {
               // Unknown JSON -> treat as text chunk
               yield { type: 'chunk', content: raw };

@@ -1,3 +1,5 @@
+from typing import Optional
+
 import uvicorn
 import logging
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -8,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from agents.agent_orchestrator import AgentOrchestrator
 import json
+import uuid
 
 # Load environment variables from .env file
 load_dotenv()
@@ -47,6 +50,7 @@ def health_check():
 # Define the request model for user queries
 class UserQueryRequest(BaseModel):
     query: str  # The query string provided by the user
+    conversation_id: Optional[str] = None
 
 # Define the request model for log entries
 class LogEntry(BaseModel):
@@ -60,9 +64,10 @@ class LogEntry(BaseModel):
 @app.post("/agent_query")
 async def agent_query(user_request: UserQueryRequest):
     logger.info(f"Received user request: {user_request.query}")
+    conversation_id = user_request.conversation_id or str(uuid.uuid4())
 
     return StreamingResponse(
-        main_agent.process_query(user_request.query),
+        main_agent.process_query(user_request.query, conversation_id),
         media_type="text/event-stream"
     )
 
@@ -94,8 +99,9 @@ async def index_log(log_entry: LogEntry):
 async def search_logs(user_request: UserQueryRequest):
     logger.info(f"Received search query for logs: {user_request.query}")
     tool_call_query = f"Call: search_indexed_logs(query_text='''{user_request.query}''')"
+    conversation_id = str(uuid.uuid4())
 
-    response_generator = main_agent.process_query(tool_call_query)
+    response_generator = main_agent.process_query(tool_call_query, conversation_id)
 
     final_response = ""
     async for chunk in response_generator:
