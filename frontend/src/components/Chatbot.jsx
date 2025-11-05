@@ -8,6 +8,7 @@ import ChatInput from '@/components/ChatInput';
 function Chatbot() {
 const [messages, setMessages] = useImmer([]);
 const [newMessage, setNewMessage] = useState('');
+const conversationIdRef = useRef(null);
 const firstTokenRef = useRef(false);
 const isLoading = messages.length > 0 && messages[messages.length - 1].loading;
 
@@ -25,9 +26,11 @@ async function submitNewMessage() {
   firstTokenRef.current = true;
 
   try {
-      const stream = await api.sendChatMessage(trimmedMessage);
+      const stream = await api.sendChatMessage(trimmedMessage, conversationIdRef.current);
       for await (const evt of parseSSEStream(stream)) {
-        if (evt.type === 'chunk') {
+        if (evt.type === 'conversation_id') {
+          conversationIdRef.current = evt.id;
+        } else if (evt.type === 'chunk') {
           let token = evt.content;
           if (firstTokenRef.current) {
             token = token.replace(/^\s+/, '');
