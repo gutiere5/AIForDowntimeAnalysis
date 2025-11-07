@@ -1,4 +1,4 @@
-import {useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import { useImmer } from 'use-immer';
 import api from '@/api';
 import { parseSSEStream } from '@/utils';
@@ -9,8 +9,18 @@ function Chatbot() {
 const [messages, setMessages] = useImmer([]);
 const [newMessage, setNewMessage] = useState('');
 const conversationIdRef = useRef(null);
+const sessionIdRef = useRef(null);
 const firstTokenRef = useRef(false);
 const isLoading = messages.length > 0 && messages[messages.length - 1].loading;
+
+useEffect(() => {
+    let sid = localStorage.getItem('session_id');
+    if (!sid) {
+        sid = crypto.randomUUID();
+        localStorage.setItem('session_id', sid);
+    }
+    sessionIdRef.current = sid;
+}, []);
 
 async function submitNewMessage() {
   const trimmedMessage = newMessage.trim();
@@ -26,7 +36,7 @@ async function submitNewMessage() {
   firstTokenRef.current = true;
 
   try {
-      const stream = await api.sendChatMessage(trimmedMessage, conversationIdRef.current);
+      const stream = await api.sendChatMessage(trimmedMessage, conversationIdRef.current, sessionIdRef.current);
       for await (const evt of parseSSEStream(stream)) {
         if (evt.type === 'conversation_id') {
           conversationIdRef.current = evt.id;

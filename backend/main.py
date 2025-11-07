@@ -1,3 +1,5 @@
+from http.client import HTTPException
+from agents.request_context import RequestContext
 from typing import Optional
 import uvicorn
 import logging
@@ -49,6 +51,7 @@ def health_check():
 class UserQueryRequest(BaseModel):
     query: str  # The query string provided by the user
     conversation_id: Optional[str] = None
+    session_id: Optional[str] = None
 
 # Define the request model for log entries
 class LogEntry(BaseModel):
@@ -62,10 +65,17 @@ class LogEntry(BaseModel):
 @app.post("/agent_query")
 async def agent_query(user_request: UserQueryRequest):
     logger.info(f"Received user request: {user_request.query}")
-    conversation_id = user_request.conversation_id or str(uuid.uuid4())
+    
+    if not user_request.session_id:
+        raise HTTPException(status_code=400, detail="session_id is required")
+
+    context = RequestContext(
+        session_id=user_request.session_id,
+        conversation_id=user_request.conversation_id or str(uuid.uuid4())
+    )
 
     return StreamingResponse(
-        main_agent.process_query(user_request.query, conversation_id),
+        main_agent.process_query(user_request.query, context),
         media_type="text/event-stream"
     )
 

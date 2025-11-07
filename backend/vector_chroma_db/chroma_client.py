@@ -2,7 +2,7 @@ import chromadb
 import uuid
 from typing import List, Dict, Optional, Union
 from chromadb import QueryResult
-
+from backend.agents.request_context import RequestContext
 
 class ChromaClient:
     def __init__(self, collection_name: str = "log_embeddings", path: str = "./chroma_db"):
@@ -86,7 +86,7 @@ class ChromaClient:
             print(f"Error querying ChromaDB: {e}")
             return {"error": str(e)}
 
-    def add_or_update_conversation(self, conversation_id: str, conversation_history: str, metadata: Optional[Dict] = None) -> None:
+    def add_or_update_conversation(self, context: RequestContext, conversation_history: str, metadata: Optional[Dict] = None) -> None:
         """
         Adds or updates a conversation entry in the ChromaDB collection.
         """
@@ -94,20 +94,21 @@ class ChromaClient:
             self.collection.upsert(
                 documents=[conversation_history],
                 metadatas=[metadata if metadata else {}],
-                ids=[conversation_id]
+                ids=[context.conversation_id]
             )
-            print(f"Successfully added/updated conversation {conversation_id} in collection '{self.collection.name}'.")
+            print(f"Successfully added/updated conversation {context.conversation_id} in collection '{self.collection.name}'.")
         except Exception as e:
             print(f"Error adding/updating conversation to ChromaDB: {e}")
 
-    def get_conversation(self, conversation_id: str) -> Optional[Dict]:
+    def get_conversation(self, context: RequestContext) -> Optional[Dict]:
         """
-        Retrieves a conversation by its ID from the ChromaDB collection.
-        Returns a dictionary containing 'conversation_id' and 'metadata', or None if not found.
+        Retrieves a conversation by its ID from the ChromaDB collection, scoped to the session_id.
+        Returns a dictionary containing 'conversation_id' and 'metadata', or None if not found or if session_id does not match.
         """
         try:
             results = self.collection.get(
-                ids=[conversation_id],
+                ids=[context.conversation_id],
+                where={"session_id": context.session_id},
                 include=['documents', 'metadatas']
             )
             if results and results['documents'] and results['metadatas']:
