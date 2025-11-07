@@ -121,5 +121,12 @@ async def get_history(history_request: HistoryRequest):
     )
     return {"messages": messages}
 
+@app.get("/conversations/{session_id}")
+async def get_conversations(session_id: str):
+    from backend.repositories import conversations_repository
+    logger.info(f"Fetching all conversations for session_id: {session_id}")
+    conversations = conversations_repository.get_conversations_by_session_id(session_id)
+    return {"conversations": conversations}
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
