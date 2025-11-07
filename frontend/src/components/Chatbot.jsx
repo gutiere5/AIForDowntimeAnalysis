@@ -5,30 +5,21 @@ import { parseSSEStream } from '@/utils';
 import ChatMessages from '@/components/ChatMessages';
 import ChatInput from '@/components/ChatInput';
 
-function Chatbot() {
+function Chatbot({ sessionId, activeConversationId, onNewConversation }) {
 const [messages, setMessages] = useImmer([]);
 const [newMessage, setNewMessage] = useState('');
-const conversationIdRef = useRef(null);
-const sessionIdRef = useRef(null);
 const firstTokenRef = useRef(false);
 const isLoading = messages.length > 0 && messages[messages.length - 1].loading;
 
 useEffect(() => {
-    let sid = localStorage.getItem('session_id');
-    if (!sid) {
-        sid = crypto.randomUUID();
-        localStorage.setItem('session_id', sid);
-    }
-    sessionIdRef.current = sid;
-
-    const cid = localStorage.getItem('conversation_id');
-    if (cid) {
-        conversationIdRef.current = cid;
-        api.getHistory(cid, sid).then(history => {
+    if (activeConversationId) {
+        api.getHistory(activeConversationId, sessionId).then(history => {
             setMessages(history.messages);
         });
+    } else {
+        setMessages([]);
     }
-}, [setMessages]);
+}, [activeConversationId, sessionId, setMessages]);
 
 async function submitNewMessage() {
   const trimmedMessage = newMessage.trim();
@@ -44,11 +35,14 @@ async function submitNewMessage() {
   firstTokenRef.current = true;
 
   try {
-      const stream = await api.sendChatMessage(trimmedMessage, conversationIdRef.current, sessionIdRef.current);
+      const stream = await api.sendChatMessage(trimmedMessage, activeConversationId, sessionId);
+      let newConvoId = null;
       for await (const evt of parseSSEStream(stream)) {
         if (evt.type === 'conversation_id') {
-          conversationIdRef.current = evt.id;
-          localStorage.setItem('conversation_id', evt.id);
+          newConvoId = evt.id;
+          if (!activeConversationId) {
+            onNewConversation({ conversation_id: newConvoId, title: trimmedMessage });
+          }
         } else if (evt.type === 'chunk') {
           let token = evt.content;
           if (firstTokenRef.current) {
@@ -87,8 +81,8 @@ return (
     <div className='flex-1 min-h-0 overflow-y-auto px-8 py-6 space-y-6'>
       {messages.length === 0 && (
         <div className='flex flex-col items-center justify-center rounded-lg bg-gray-50 border border-gray-200 px-10 py-10 text-center font-urbanist text-gray-800'>
-          <p className='text-2xl font-semibold mb-2'>Welcome to \[Chatbot Name]\!</p>
-          <p className=''>Here to analyze any downtime request</p>
+          <p className='text-2xl font-semibold mb-2'>Welcome to AI Downtime Chatbot!</p>
+          <p className=''>Start a new conversation to analyze downtime requests.</p>
         </div>
       )}
       <ChatMessages messages={messages} isLoading={isLoading} />

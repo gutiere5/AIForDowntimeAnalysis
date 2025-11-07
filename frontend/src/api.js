@@ -39,4 +39,12 @@ async function getHistory(conversationId, sessionId) {
     return response.json();
   }
 
-export default { sendChatMessage, getHistory };
+async function getConversations(sessionId) {
+  const response = await fetch(`${BASE_URL}/conversations/${sessionId}`);
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  return response.json();
+}
+
+export default { sendChatMessage, getHistory, getConversations };
