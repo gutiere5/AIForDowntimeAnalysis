@@ -1,5 +1,4 @@
 from typing import Optional
-
 import uvicorn
 import logging
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -9,7 +8,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from agents.agent_orchestrator import AgentOrchestrator
-import json
 import uuid
 
 # Load environment variables from .env file
@@ -92,34 +90,6 @@ async def index_log(log_entry: LogEntry):
     except Exception as e:
         logger.error(f"Error indexing log entry: {e}")
         return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
-
-
-
-@app.post("/search_logs")
-async def search_logs(user_request: UserQueryRequest):
-    logger.info(f"Received search query for logs: {user_request.query}")
-    tool_call_query = f"Call: search_indexed_logs(query_text='''{user_request.query}''')"
-    conversation_id = str(uuid.uuid4())
-
-    response_generator = main_agent.process_query(tool_call_query, conversation_id)
-
-    final_response = ""
-    async for chunk in response_generator:
-        try:
-            data = json.loads(chunk.replace("data: ", ""))
-            if data.get("type") == "chunk":
-                final_response += data.get("content", "")
-            elif data.get("type") == "done":
-                break
-        except json.JSONDecodeError:
-            final_response += chunk.replace("data: ", "")
-    
-    try:
-        tool_output = json.loads(final_response)
-        return JSONResponse(content=tool_output)
-    except json.JSONDecodeError:
-        return JSONResponse(content={"status": "error", "message": f"Unexpected response from tool: {final_response}"}, status_code=500)
-
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
