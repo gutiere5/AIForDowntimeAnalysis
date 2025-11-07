@@ -20,7 +20,15 @@ useEffect(() => {
         localStorage.setItem('session_id', sid);
     }
     sessionIdRef.current = sid;
-}, []);
+
+    const cid = localStorage.getItem('conversation_id');
+    if (cid) {
+        conversationIdRef.current = cid;
+        api.getHistory(cid, sid).then(history => {
+            setMessages(history.messages);
+        });
+    }
+}, [setMessages]);
 
 async function submitNewMessage() {
   const trimmedMessage = newMessage.trim();
@@ -40,6 +48,7 @@ async function submitNewMessage() {
       for await (const evt of parseSSEStream(stream)) {
         if (evt.type === 'conversation_id') {
           conversationIdRef.current = evt.id;
+          localStorage.setItem('conversation_id', evt.id);
         } else if (evt.type === 'chunk') {
           let token = evt.content;
           if (firstTokenRef.current) {

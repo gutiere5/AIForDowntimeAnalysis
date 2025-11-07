@@ -24,4 +24,19 @@ const BASE_URL = "http://localhost:8000";
       return response.body;
     }
 
-    export default { sendChatMessage };
+async function getHistory(conversationId, sessionId) {
+    const response = await fetch(`${BASE_URL}/get_history`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        conversation_id: conversationId,
+        session_id: sessionId,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  }
+
+export default { sendChatMessage, getHistory };
