@@ -1,4 +1,5 @@
-from http.client import HTTPException
+from fastapi import FastAPI, HTTPException
+from backend.database import initialize_database
 from agents.request_context import RequestContext
 from typing import Optional
 import uvicorn
@@ -6,7 +7,6 @@ import logging
 from fastapi.responses import StreamingResponse, JSONResponse
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from agents.agent_orchestrator import AgentOrchestrator
@@ -26,6 +26,12 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(title="Agent Query API", description="API to handle user queries for an agent", version="1.0.0")
+
+@app.on_event("startup")
+def on_startup():
+    """Event handler for application startup."""
+    logger.info("Application is starting up...")
+    initialize_database()
 
 # Define Main LLM Agent/Model
 main_agent = AgentOrchestrator(api_key=HUGGINGFACE_TOKEN)
@@ -52,6 +58,10 @@ class UserQueryRequest(BaseModel):
     query: str  # The query string provided by the user
     conversation_id: Optional[str] = None
     session_id: Optional[str] = None
+
+class HistoryRequest(BaseModel):
+    conversation_id: str
+    session_id: str
 
 # Define the request model for log entries
 class LogEntry(BaseModel):
@@ -100,6 +110,16 @@ async def index_log(log_entry: LogEntry):
     except Exception as e:
         logger.error(f"Error indexing log entry: {e}")
         return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
+
+@app.post("/get_history")
+async def get_history(history_request: HistoryRequest):
+    from backend.repositories import conversations_repository
+    logger.info(f"Fetching history for conversation_id: {history_request.conversation_id}")
+    messages = conversations_repository.get_messages_by_conversation_id(
+        history_request.conversation_id,
+        history_request.session_id
+    )
+    return {"messages": messages}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

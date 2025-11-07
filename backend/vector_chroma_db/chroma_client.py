@@ -86,41 +86,6 @@ class ChromaClient:
             print(f"Error querying ChromaDB: {e}")
             return {"error": str(e)}
 
-    def add_or_update_conversation(self, context: RequestContext, conversation_history: str, metadata: Optional[Dict] = None) -> None:
-        """
-        Adds or updates a conversation entry in the ChromaDB collection.
-        """
-        try:
-            self.collection.upsert(
-                documents=[conversation_history],
-                metadatas=[metadata if metadata else {}],
-                ids=[context.conversation_id]
-            )
-            print(f"Successfully added/updated conversation {context.conversation_id} in collection '{self.collection.name}'.")
-        except Exception as e:
-            print(f"Error adding/updating conversation to ChromaDB: {e}")
-
-    def get_conversation(self, context: RequestContext) -> Optional[Dict]:
-        """
-        Retrieves a conversation by its ID from the ChromaDB collection, scoped to the session_id.
-        Returns a dictionary containing 'conversation_id' and 'metadata', or None if not found or if session_id does not match.
-        """
-        try:
-            results = self.collection.get(
-                ids=[context.conversation_id],
-                where={"session_id": context.session_id},
-                include=['documents', 'metadatas']
-            )
-            if results and results['documents'] and results['metadatas']:
-                return {
-                    "conversation_history": results['documents'][0],
-                    "metadata": results['metadatas'][0]
-                }
-            return None
-        except Exception as e:
-            print(f"Error retrieving conversation from ChromaDB: {e}")
-            return None
-
 # Example Usage
 if __name__ == "__main__":
     from backend.tools.log_processor import log_to_text, generate_embedding
