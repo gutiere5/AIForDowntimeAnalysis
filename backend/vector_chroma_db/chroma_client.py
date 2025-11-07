@@ -2,7 +2,7 @@ import chromadb
 import uuid
 from typing import List, Dict, Optional, Union
 from chromadb import QueryResult
-
+from backend.agents.request_context import RequestContext
 
 class ChromaClient:
     def __init__(self, collection_name: str = "log_embeddings", path: str = "./chroma_db"):

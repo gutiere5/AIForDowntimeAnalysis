@@ -1,13 +1,16 @@
+from fastapi import FastAPI, HTTPException
+from backend.database import initialize_database
+from agents.request_context import RequestContext
+from typing import Optional
 import uvicorn
 import logging
 from fastapi.responses import StreamingResponse, JSONResponse
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from agents.agent_orchestrator import AgentOrchestrator
-import json
+import uuid
 
 # Load environment variables from .env file
 load_dotenv()
@@ -23,6 +26,12 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(title="Agent Query API", description="API to handle user queries for an agent", version="1.0.0")
+
+@app.on_event("startup")
+def on_startup():
+    """Event handler for application startup."""
+    logger.info("Application is starting up...")
+    initialize_database()
 
 # Define Main LLM Agent/Model
 main_agent = AgentOrchestrator(api_key=HUGGINGFACE_TOKEN)
@@ -47,6 +56,12 @@ def health_check():
 # Define the request model for user queries
 class UserQueryRequest(BaseModel):
     query: str  # The query string provided by the user
+    conversation_id: Optional[str] = None
+    session_id: Optional[str] = None
+
+class HistoryRequest(BaseModel):
+    conversation_id: str
+    session_id: str
 
 # Define the request model for log entries
 class LogEntry(BaseModel):
@@ -60,9 +75,17 @@ class LogEntry(BaseModel):
 @app.post("/agent_query")
 async def agent_query(user_request: UserQueryRequest):
     logger.info(f"Received user request: {user_request.query}")
+    
+    if not user_request.session_id:
+        raise HTTPException(status_code=400, detail="session_id is required")
+
+    context = RequestContext(
+        session_id=user_request.session_id,
+        conversation_id=user_request.conversation_id or str(uuid.uuid4())
+    )
 
     return StreamingResponse(
-        main_agent.process_query(user_request.query),
+        main_agent.process_query(user_request.query, context),
         media_type="text/event-stream"
     )
 
@@ -88,32 +111,22 @@ async def index_log(log_entry: LogEntry):
         logger.error(f"Error indexing log entry: {e}")
         return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
 
+@app.post("/get_history")
+async def get_history(history_request: HistoryRequest):
+    from backend.repositories import conversations_repository
+    logger.info(f"Fetching history for conversation_id: {history_request.conversation_id}")
+    messages = conversations_repository.get_messages_by_conversation_id(
+        history_request.conversation_id,
+        history_request.session_id
+    )
+    return {"messages": messages}
 
-
-@app.post("/search_logs")
-async def search_logs(user_request: UserQueryRequest):
-    logger.info(f"Received search query for logs: {user_request.query}")
-    tool_call_query = f"Call: search_indexed_logs(query_text='''{user_request.query}''')"
-
-    response_generator = main_agent.process_query(tool_call_query)
-
-    final_response = ""
-    async for chunk in response_generator:
-        try:
-            data = json.loads(chunk.replace("data: ", ""))
-            if data.get("type") == "chunk":
-                final_response += data.get("content", "")
-            elif data.get("type") == "done":
-                break
-        except json.JSONDecodeError:
-            final_response += chunk.replace("data: ", "")
-    
-    try:
-        tool_output = json.loads(final_response)
-        return JSONResponse(content=tool_output)
-    except json.JSONDecodeError:
-        return JSONResponse(content={"status": "error", "message": f"Unexpected response from tool: {final_response}"}, status_code=500)
-
+@app.get("/conversations/{session_id}")
+async def get_conversations(session_id: str):
+    from backend.repositories import conversations_repository
+    logger.info(f"Fetching all conversations for session_id: {session_id}")
+    conversations = conversations_repository.get_conversations_by_session_id(session_id)
+    return {"conversations": conversations}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
