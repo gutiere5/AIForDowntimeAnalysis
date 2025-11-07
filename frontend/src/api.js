@@ -1,9 +1,12 @@
 const BASE_URL = "http://localhost:8000";
 
-    async function sendChatMessage(user_message, conversation_id = null) {
+    async function sendChatMessage(user_message, conversation_id = null, session_id = null) {
       const payload = { query: user_message };
       if (conversation_id) {
         payload.conversation_id = conversation_id;
+      }
+      if (session_id) {
+        payload.session_id = session_id;
       }
 
       const response = await fetch(BASE_URL + `/agent_query`, {
