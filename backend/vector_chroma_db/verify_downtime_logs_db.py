@@ -7,7 +7,7 @@ def verify_db_contents():
     """
     print("Connecting to ChromaDB...")
     try:
-        chroma_client = ChromaClient(collection_name="log_embeddings", path="./backend/chroma_db")
+        chroma_client = ChromaClient(collection_name="log_embeddings", path="../chroma_db")
         collection = chroma_client.collection
         
         print(f"Successfully connected to collection: '{collection.name}'")

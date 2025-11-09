@@ -1,4 +1,3 @@
-
 import logging
 from backend.database import get_db_connection
 
