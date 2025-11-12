@@ -1,5 +1,5 @@
 from sentence_transformers import SentenceTransformer
-from backend.vector_chroma_db.chroma_client import ChromaClient
+from backend.repositories.vector_chroma_db.chroma_client import ChromaClient
 
 class VectorDBRetriever:
     def __init__(self, collection_name="log_embeddings"):

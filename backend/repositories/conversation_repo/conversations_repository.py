@@ -1,5 +1,5 @@
 import logging
-from backend.database import get_db_connection
+from backend.repositories.conversation_repo.database import get_db_connection
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

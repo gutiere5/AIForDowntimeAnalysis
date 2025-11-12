@@ -2,9 +2,9 @@ import logging
 import uuid
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from backend.api.schemas import  UserQueryRequest
-from backend.agents.agent_orchestrator import AgentOrchestrator
-from backend.agents.request_context import RequestContext
+from backend.api.schemas import UserQueryRequest
+from backend.agents.hub_and_spoke_orchestrator import AgentOrchestrator
+from backend.agents.schemas import RequestContext
 import os
 from dotenv import load_dotenv
 
@@ -14,8 +14,9 @@ router = APIRouter()
 def get_main_agent():
     load_dotenv()
     token = os.getenv("HUGGINGFACE_API_TOKEN")
+    if not token:
+        raise ValueError("HUGGINGFACE_API_TOKEN not found in environment variables.")
     return AgentOrchestrator(api_key=token)
-
 
 @router.post("/agent_query")
 async def agent_query(user_request: UserQueryRequest):

@@ -2,7 +2,7 @@ import chromadb
 import uuid
 from typing import List, Dict, Optional, Union
 from chromadb import QueryResult
-from backend.agents.request_context import RequestContext
+
 
 class ChromaClient:
     def __init__(self, collection_name: str = "log_embeddings", path: str = "./chroma_db"):
@@ -88,7 +88,7 @@ class ChromaClient:
 
 # Example Usage
 if __name__ == "__main__":
-    from backend.tools.log_processor import log_to_text, generate_embedding
+    from backend.agents.tools.log_processor import log_to_text, generate_embedding
 
     # Initialize ChromaClient
     chroma_client = ChromaClient(collection_name="downtime_logs")

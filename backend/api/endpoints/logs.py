@@ -2,7 +2,7 @@ import logging
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from backend.api.schemas import LogEntry
-from backend.vector_chroma_db import services
+from backend.repositories.vector_chroma_db import services
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
