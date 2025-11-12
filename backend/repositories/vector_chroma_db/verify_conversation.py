@@ -1,4 +1,4 @@
-from backend.vector_chroma_db.chroma_client import ChromaClient
+from backend.repositories.vector_chroma_db.chroma_client import ChromaClient
 
 def verify_conversation(conversation_id: str):
     """
@@ -7,7 +7,7 @@ def verify_conversation(conversation_id: str):
     print(f"Attempting to retrieve conversation with ID: {conversation_id}")
     
     # 1. Initialize the ChromaClient for the 'conversations' collection
-    conversation_client = ChromaClient(collection_name="conversations", path="../chroma_db")
+    conversation_client = ChromaClient(collection_name="conversations", path="chroma_db")
     
     # 2. Retrieve the conversation data
     conversation_data = conversation_client.get_conversation(conversation_id)

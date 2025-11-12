@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from backend.database import initialize_database
+from backend.repositories.conversation_repo.database import initialize_database
 import uvicorn
 import logging
 from fastapi.middleware.cors import CORSMiddleware

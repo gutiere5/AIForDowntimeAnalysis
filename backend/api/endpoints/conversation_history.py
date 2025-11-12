@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter
 from backend.api.schemas import ConversationHistoryRequest
-from backend.repositories import conversations_repository
+from backend.repositories.conversation_repo import conversations_repository
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

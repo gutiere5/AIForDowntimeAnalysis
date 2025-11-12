@@ -1,14 +1,16 @@
-
 import sqlite3
 import logging
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DATABASE_URL = "main.db"
+DATABASE_URL = os.path.join(os.path.dirname(__file__), 'conversations.db')
 
 def get_db_connection():
+    logger.info(f"Database connection established. {DATABASE_URL}")
+
     """Creates and returns a new database connection."""
     conn = sqlite3.connect(DATABASE_URL)
     conn.row_factory = sqlite3.Row
