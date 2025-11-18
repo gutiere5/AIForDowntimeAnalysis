@@ -26,3 +26,11 @@ dist-ssr
 *.sln
 *.sw?
 .env.build
+# Python cache
+__pycache__/
+*.pyc
+
+# Local Databases
+*.sqlite3
+chroma_db/
+backend/chroma_db/
