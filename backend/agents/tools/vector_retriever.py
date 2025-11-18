@@ -1,9 +1,9 @@
-from sentence_transformers import SentenceTransformer
+from backend.agents.llm_models.embedding_model import EMBEDDING_MODEL
 from backend.repositories.vector_chroma_db.chroma_client import ChromaClient
 
 class VectorDBRetriever:
     def __init__(self, collection_name="log_embeddings"):
-        self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+        self.embedding_model = EMBEDDING_MODEL
         self.chroma_client = ChromaClient(collection_name)
 
     def retrieve(self, query: str, top_k: int = 15):

@@ -1,6 +1,6 @@
 import logging
 from backend.api.schemas import LogEntry
-from backend.agents.tools.log_processor import log_to_text, generate_embedding
+from backend.repositories.vector_chroma_db.log_processor import log_to_text, generate_embedding
 from backend.repositories.vector_chroma_db.chroma_client import ChromaClient
 
 logger = logging.getLogger(__name__)

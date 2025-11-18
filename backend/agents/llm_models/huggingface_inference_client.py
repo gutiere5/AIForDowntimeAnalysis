@@ -22,20 +22,20 @@ class HuggingFaceInferenceService:
         messages: List[Dict[str, str]],
         max_tokens: int,
         temperature: float,
-        stream: bool = False
+        stream: bool = False,
     ) -> Union[Generator[Any, None, None], Any]:
         """
         Creates a chat completion using the configured model.
         Can handle both streaming and non-streaming responses.
         """
-        logger.debug(f"Creating completion with model {self.model_id}, stream={stream}")
+        logger.info(f"Creating completion with model {self.model_id}, stream={stream}")
         try:
             response = self.client.chat.completions.create(
                 model=self.model_id,
                 messages=messages,
                 max_tokens=max_tokens,
                 temperature=temperature,
-                stream=stream
+                stream=stream,
             )
             return response
         except Exception as e:
