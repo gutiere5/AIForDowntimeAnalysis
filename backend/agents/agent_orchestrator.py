@@ -3,7 +3,10 @@ from huggingface_hub import InferenceClient
 import logging
 import inspect
 import ast
+from datetime import datetime
 from backend.tools.tools import AVAILABLE_TOOLS
+from backend.repositories import conversations_repository
+from backend.agents.request_context import RequestContext
 
 class AgentOrchestrator:
     def __init__(self, api_key: str):
@@ -32,17 +35,28 @@ class AgentOrchestrator:
         try:
             if "Call:" not in tool_call_string:
                 return f"Error: Unrecognized tool call format: {tool_call_string}"
+
             call_part = tool_call_string.split("Call:", 1)[1].strip()
             self.logger.info(f"Parsed call part: {call_part}")
-            if "(" not in call_part or not call_part.endswith(")"):
+
+            # Robustly find the function name and arguments
+            first_paren = call_part.find("(")
+            last_paren = call_part.rfind(")")
+
+            if first_paren == -1 or last_paren == -1 or last_paren < first_paren:
                 return f"Error: Malformed call expression: {call_part}"
-            func_name, args_part = call_part.split("(", 1)
-            args_part = args_part[:-1]
+
+            func_name = call_part[:first_paren].strip()
+            args_part = call_part[first_paren + 1:last_paren].strip()
+
             self.logger.info(f"Function: {func_name}, Args part: {args_part}")
+
             try:
-                kwargs = self._parse_kwargs(args_part)
+                # Handle empty args case
+                kwargs = self._parse_kwargs(args_part) if args_part else {}
             except Exception as e:
                 return f"Error parsing arguments: {e}"
+
             if func_name in AVAILABLE_TOOLS:
                 result = AVAILABLE_TOOLS[func_name](**kwargs)
                 self.logger.info(f"Tool {func_name} executed with result: {result}")
@@ -72,14 +86,13 @@ class AgentOrchestrator:
           - synthesizer
         """
         system_instructions = (
-            "You are a routing model. Your task is to decide whether a user's query can be answered by calling a tool. "
-            "If the user is asking about downtime, machine failures, error codes, or log entries, you should use the `retrieve_log_entries` tool to get relevant context. "
-            "For broad questions about trends, summaries, or frequent issues, you should request a larger number of results by setting the `top_k` parameter to a value like 15. "
-            "If a tool is needed, respond EXACTLY in the format: Call: tool_name(param_name=\"value\", ...). "
-            "If the query is a general greeting or a question that does not require a tool, respond with 'synthesizer'. "
-            "Check the conversation history: if the tool has already been called with the same arguments, respond with 'synthesizer' instead. "
-            "After a tool has been called, respond with 'synthesizer' on the next turn. "
-            "Do not add extra commentary."
+            "You are a precise routing model. Your response MUST be one of two things: "
+            "1. The word 'synthesizer'. "
+            "2. A tool call formatted EXACTLY as: Call: tool_name(param_name=\"value\"). "
+            "DO NOT add any other text, commentary, or newlines. "
+            "If the user is asking about downtime, machine failures, or logs, call the `retrieve_log_entries` tool. "
+            "Otherwise, or if the conversation is a simple greeting, respond with 'synthesizer'. "
+            "After a tool has been called, you should typically respond with 'synthesizer' on the next turn so the main model can answer the user."
         )
 
         tools_context = f"Available tools:\n{self.tools_code}"
@@ -104,7 +117,7 @@ class AgentOrchestrator:
             self.logger.error(f"Router model error: {e}")
             return "synthesizer"
 
-    def _call_synthesizer_model(self, original_query: str, conversation_history: str):
+    def _call_synthesizer_model(self, original_query: str, conversation_history: str, conversation_id: str):
         """Streams a synthesized final answer to the client."""
         system_message = (
             "You are a helpful assistant. Your primary task is to answer user queries based on the provided tool outputs. "
@@ -121,6 +134,7 @@ class AgentOrchestrator:
         ]
 
         self.logger.info(f"Synthesizer messages: {messages}")
+        accumulated_response = ""
         try:
             response = self.synthesizer_client.chat.completions.create(
                 model=self.model_id,
@@ -136,37 +150,148 @@ class AgentOrchestrator:
                 except Exception:
                     content = None
                 if content:
+                    accumulated_response += content
                     payload = {"type": "chunk", "content": content}
                     self.logger.info(f"Synthesizer chunk: {payload}")
                     yield f"data: {json.dumps(payload)}\n\n"
             yield "data: {\"type\":\"done\"}\n\n"
+
+
         except Exception as e:
             self.logger.error(f"Error during Synthesizer API call: {e}")
             yield f"data: Error: {str(e)}\n\n"
             yield "data: [DONE]\n\n"
 
-    def process_query(self, query: str, max_steps: int = 5):
-        self.logger.info(f"Processing query: {query}")
-        conversational_history = f"User Query: {query}\n"
+    def process_query(self, query: str, context: RequestContext, max_steps: int = 5):
+
+        self.logger.info(f"Processing query: {query} for context: {context}")
+
+        yield f"data: {json.dumps({'type': 'conversation_id', 'id': context.conversation_id})}\n\n"
+
+
+
+        # Save the user's message immediately
+
+        conversations_repository.add_message(context.conversation_id, context.session_id, 'user', query)
+
+
+
+        # 1. Retrieve conversation history from the new repository
+
+        history_list = conversations_repository.get_messages_by_conversation_id(context.conversation_id, context.session_id)
+
+
+
+        # Format history for the model
+
+        conversational_history = ""
+
+        for msg in history_list:
+
+            conversational_history += f"{msg['role'].capitalize()} Query: {msg['content']}\n"
+
+
+
+        # Add the current user query to the history for the current turn
+
+        conversational_history += f"User Query: {query}\n"
+
+
+
         last_tool_call = None
 
+
+
         for step in range(max_steps):
+
             self.logger.info(f"Step {step+1}/{max_steps}")
-            action = self._call_router_model(conversational_history)
+
+
+
+            router_query = conversational_history
+
+            action = self._call_router_model(router_query).split('\n')[0].strip()
+
+
+
             self.logger.info(f"Router decision: {action}")
+
             if action.lower().startswith("call:"):
+
                 self.logger.info(f"The last tool call was: {last_tool_call}, current action: {action}")
+
                 if action == last_tool_call:
+
                     self.logger.warning("Detected repeated tool call; breaking to avoid loop.")
+
                     break
+
                 tool_result = self._execute_tool_call(action)
+
                 conversational_history += f"{action}\nTool output: {tool_result}\n"
-                self.logger.info(f"Updated conversational history: {conversational_history}")
+
                 last_tool_call = action
+
                 continue
+
             else:
-                final_response = self._call_synthesizer_model(query, conversational_history)
+
                 self.logger.info("Final response generated by synthesizer.")
-                return final_response
+
+
+
+                # 3. Stream the response and save the assistant's message
+
+                final_response = ""
+
+                for chunk in self._call_synthesizer_model(query, conversational_history, context.conversation_id):
+
+                    try:
+
+                        data = json.loads(chunk.split("data: ")[1])
+
+                        if data.get("type") == "chunk":
+
+                            final_response += data.get("content", "")
+
+                    except (json.JSONDecodeError, IndexError):
+
+                        pass # Ignore non-json chunks or malformed data
+
+                    yield chunk
+
+
+
+                conversations_repository.add_message(context.conversation_id, context.session_id, 'assistant', final_response)
+
+                self.logger.info(f"Saved assistant response to DB.")
+
+                return
+
+
+
+        # Fallback for max steps reached
+
         self.logger.info("Reached max steps; forcing synthesis.")
-        return self._call_synthesizer_model(query, conversational_history)
+
+        final_response = ""
+
+        for chunk in self._call_synthesizer_model(query, conversational_history, context.conversation_id):
+
+            try:
+
+                data = json.loads(chunk.split("data: ")[1])
+
+                if data.get("type") == "chunk":
+
+                    final_response += data.get("content", "")
+
+            except (json.JSONDecodeError, IndexError):
+
+                pass
+
+            yield chunk
+
+        conversations_repository.add_message(context.conversation_id, context.session_id, 'assistant', final_response)
+
+        self.logger.info(f"Saved assistant response to DB after max steps.")

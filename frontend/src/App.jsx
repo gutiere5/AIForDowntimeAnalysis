@@ -1,19 +1,46 @@
-
+import { useState, useEffect, useCallback } from 'react'; // Merged imports
 import Chatbot from '@/components/Chatbot';
 import SidePanel from '@/components/SidePanel';
-// 1. IMPORT useState from React and your new AboutModal
-import  { useState } from 'react';
-import { AboutModal } from './components/AboutModal'; // Make sure this path is correct
+import { AboutModal } from './components/AboutModal'; // Your import
+import api from '@/api'; // 'main' branch's import
 
 function App() {
-  // 2. ADD state to control the modal's visibility
+  // Your 'About Modal' state
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+
+  // State from the 'main' branch
+  const [conversations, setConversations] = useState([]);
+  const [activeConversationId, setActiveConversationId] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
+
+  // Effect from the 'main' branch
+  useEffect(() => {
+    let sid = localStorage.getItem('session_id');
+    if (!sid) {
+      sid = crypto.randomUUID();
+      localStorage.setItem('session_id', sid);
+    }
+    setSessionId(sid);
+
+    api.getConversations(sid).then(data => {
+      setConversations(data.conversations);
+      if (data.conversations.length > 0) {
+        setActiveConversationId(data.conversations[0].conversation_id);
+      }
+    });
+  }, []);
+
+  // Handler from the 'main' branch
+  const handleNewConversation = useCallback((newConvo) => {
+    if (!conversations.find(c => c.conversation_id === newConvo.conversation_id)) {
+      setConversations(prev => [newConvo, ...prev]);
+    }
+    setActiveConversationId(newConvo.conversation_id);
+  }, [conversations]);
 
   return (
     <div className='flex flex-col h-screen w-screen overflow-hidden'>
-      {/* I've added flex layout to the header to position 
-        the title and the new button.
-      */}
+      {/* Your header with the 'About' button */}
       <header className='z-20 bg-white border-b flex items-center justify-between px-6 py-4'>
         {/* An empty div to help center the title */}
         <div className='w-20'></div> 
@@ -22,7 +49,7 @@ function App() {
           AI DownTime Chatbot
         </h1>
 
-        {/* 3. ADD the trigger button */}
+        {/* Your trigger button */}
         <button 
           onClick={() => setIsAboutModalOpen(true)}
           className='w-20 rounded-md bg-gray-200 px-3 py-1 text-sm font-medium text-gray-800 hover:bg-gray-300'
@@ -31,16 +58,23 @@ function App() {
         </button>
       </header>
 
+      {/* Merged body, using the props from 'main' */}
       <div className='flex flex-1 min-h-0'>
-        <SidePanel />
+        <SidePanel 
+          conversations={conversations} 
+          activeConversationId={activeConversationId} 
+          setActiveConversationId={setActiveConversationId} 
+        />
         <main className='flex flex-col flex-1 min-h-0'>
-          <Chatbot />
+          <Chatbot 
+           sessionId={sessionId} 
+           activeConversationId={activeConversationId} 
+           onNewConversation={handleNewConversation}
+          />
         </main>
       </div>
 
-      {/* 4. ADD the modal component itself. 
-        It will be hidden until `isAboutModalOpen` is true.
-      */}
+      {/* Your modal component */}
       <AboutModal 
         isOpen={isAboutModalOpen} 
         onClose={() => setIsAboutModalOpen(false)} 

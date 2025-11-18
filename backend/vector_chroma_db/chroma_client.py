@@ -1,11 +1,14 @@
 import chromadb
 import uuid
 from typing import List, Dict, Optional, Union
-from chromadb.types import QueryResult
+
+# This is the correctly merged and fixed import
+from chromadb.types import QueryResults
+# (We don't need the RequestContext import that was in 'main')
 
 
 class ChromaClient:
-    def __init__(self, collection_name: str = "log_embeddings", path: str = "./chroma_db"):
+    def __init__(self, collection_name: str = "log_embeddings", path: str = "./backend/chroma_db"):
         self.client = chromadb.PersistentClient(path=path)
         self.collection = self._get_or_create_collection(collection_name)
 
@@ -16,7 +19,7 @@ class ChromaClient:
         try:
             collection = self.client.get_collection(name=collection_name)
             print(f"Collection '{collection_name}' already exists.")
-        except: # chromadb.exceptions.CollectionNotFoundError:
+        except Exception: # chromadb.exceptions.CollectionNotFoundError:
             collection = self.client.create_collection(name=collection_name)
             print(f"Collection '{collection_name}' created.")
         return collection
@@ -71,7 +74,8 @@ class ChromaClient:
         self,
         query_embeddings: List[List[float]],
         n_results: int = 5
-    ) -> Union[QueryResult, dict[str, str]]:
+    # I also fixed this line to use the correct 'QueryResults' (plural)
+    ) -> Union[QueryResults, dict[str, str]]:
         """
         Queries the ChromaDB collection with given embeddings and returns the top n_results.
         """
