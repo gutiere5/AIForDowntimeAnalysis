@@ -1,6 +1,4 @@
-from sentence_transformers import SentenceTransformer
-
-embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+from backend.agents.llm_models.embedding_model import EMBEDDING_MODEL
 
 def log_to_text(log_entry: dict) -> str:
     """
@@ -20,7 +18,7 @@ def generate_embedding(text: str) -> list[float]:
     """
     try:
         # The encode method returns a numpy array, convert to list for type consistency
-        generated_embedding = embedding_model.encode(text).tolist()
+        generated_embedding = EMBEDDING_MODEL.encode(text).tolist()
         return generated_embedding
     except Exception as ex:
         print(f"Error generating embedding: {ex}")

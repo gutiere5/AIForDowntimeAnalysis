@@ -20,3 +20,27 @@ def retrieve_log_entries(query: str, top_k: int = 15) -> str:
     """
     results = vector_retriever_instance.retrieve(query, top_k)
     return json.dumps(results)
+
+TOOL_SCHEMA_DEFINITIONS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "retrieve_log_entries",
+            "description": "Retrieves the top_k most relevant log entries from the vector database based on a natural language query. This tool is essential for finding relevant log data for downtime analysis.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The natural language query to search for in the logs, e.g., 'downtime events for machine X' or 'errors related to database connection'."
+                    },
+                    "top_k": {
+                        "type": "integer",
+                        "description": "The number of top relevant log entries to retrieve. Defaults to 15. Adjust this based on how many logs are needed for a comprehensive analysis."
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    }
+]

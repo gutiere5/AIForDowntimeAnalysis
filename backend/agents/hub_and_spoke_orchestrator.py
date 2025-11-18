@@ -35,6 +35,7 @@ class AgentOrchestrator:
         # The retrieval_agent expects a List[Dict], so we pass history_list directly.
         self.logger.info("Orchestrator: Starting retrieval step.")
         retrieved_data = self.retrieval_agent.execute(history_list)
+        self.logger.info(f"Orchestrator: Retrieved data: {retrieved_data}")
         self.state['retrieved_logs'] = retrieved_data
         self.logger.info(f"Orchestrator: Updated state with {len(retrieved_data)} retrieved logs.")
         yield f"data: {json.dumps({'type': 'status', 'message': f'Retrieved {len(retrieved_data)} log entries'})}\\n\\n"
