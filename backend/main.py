@@ -1,10 +1,7 @@
-# Imports from 'main' branch
 from fastapi import FastAPI, HTTPException
 from backend.database import initialize_database
 from agents.request_context import RequestContext
 from typing import Optional
-
-# Your original imports
 import uvicorn
 import logging
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -12,15 +9,12 @@ import os
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
-# Imports from BOTH branches, correctly merged
-from backend.agents.agent_orchestrator import AgentOrchestrator # Your 'backend.' path
-import json # Your import
-import uuid # 'main' branch's import
+from backend.agents.agent_orchestrator import AgentOrchestrator
+import uuid
 
 # Load environment variables from .env file
-load_dotenv()  # Loads the main .env file (for secrets)
-load_dotenv(dotenv_path=".env.build", override=True) # Loads and overrides with build info
+load_dotenv()
+load_dotenv(dotenv_path=".env.build", override=True)
 
 # Load API Key Credentials
 OPENAI_TOKEN = os.getenv("OPENAI_API_KEY")
