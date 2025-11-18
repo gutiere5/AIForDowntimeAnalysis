@@ -1,7 +1,7 @@
 import chromadb
 import uuid
 from typing import List, Dict, Optional, Union
-from chromadb import QueryResult
+from chromadb.types import QueryResult
 
 
 class ChromaClient:
