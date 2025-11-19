@@ -70,20 +70,33 @@ class ChromaClient:
     def query_logs(
         self,
         query_embeddings: List[List[float]],
+        where: Optional[Dict[str, Union[str, int, float]]] = None,
         n_results: int = 5
-    ) -> Union[QueryResult, dict[str, str]]:
-        """
-        Queries the ChromaDB collection with given embeddings and returns the top n_results.
-        """
+    ):
         try:
-            results = self.collection.query(
+            collection_results = self.collection.query(
                 query_embeddings=query_embeddings,
                 n_results=n_results,
-                include=['documents', 'distances', 'metadatas']
+                where=where,
+                include=['documents', 'embeddings', 'metadatas']
             )
-            return results
+            return collection_results
         except Exception as e:
             print(f"Error querying ChromaDB: {e}")
+            return {"error": str(e)}
+
+    def get_logs(
+            self,
+            where: Optional[Dict[str, Union[str, int, float]]] = None,
+    ):
+        try:
+            collection_results = self.collection.get(
+                where=where,
+                include=['documents', 'embeddings', 'metadatas']
+            )
+            return collection_results
+        except Exception as e:
+            print(f"Error retrieving logs from ChromaDB: {e}")
             return {"error": str(e)}
 
 # Example Usage
