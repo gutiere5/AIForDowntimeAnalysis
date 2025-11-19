@@ -2,6 +2,7 @@ from backend.agents.llm_models.huggingface_inference_client import HuggingFaceIn
 import logging
 import json
 
+
 class AgentSynthesis:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
@@ -78,6 +79,6 @@ class AgentSynthesis:
         except Exception as e:
             self.logger.error(f"AgentSynthesizer Error: Failed to generate final response.")
             self.logger.error(f"AgentSynthesizer Error: {e}")
+            yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
+            yield "data: {\"type\":\"done\"}\n\n"
             return
-
-

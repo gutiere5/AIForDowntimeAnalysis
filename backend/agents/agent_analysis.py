@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
+
 class AgentAnalysis:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
@@ -137,7 +138,8 @@ class AgentAnalysis:
             }
 
         else:
-
+            # This will handle the queries like "Show me all events"
+            self.logger.info("Analysis: Formatting 'passthrough' data for synthesizer...")
             ids = data['ids']
             documents = data['documents']
             metadatas = data['metadatas']

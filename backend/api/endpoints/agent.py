@@ -3,16 +3,17 @@ import uuid
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from backend.api.schemas import UserQueryRequest
-from backend.new_agents.main_agent import MainAgent
-from backend.agents.schemas import RequestContext
+from backend.agents.main_agent import MainAgent
+from backend.agents.utils.schemas import RequestContext
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+
 @router.post("/agent_query")
 async def agent_query(user_request: UserQueryRequest):
     logger.info(f"Received user request: {user_request.query}")
-    main_agent = MainAgent
+    main_agent = MainAgent(name="MainAgent")
 
     if not user_request.session_id:
         raise HTTPException(status_code=400, detail="session_id is required")

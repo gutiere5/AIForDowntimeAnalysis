@@ -1,11 +1,12 @@
 import chromadb
 import uuid
 from typing import List, Dict, Optional, Union
-from chromadb import QueryResult
+import logging
 
 
 class ChromaClient:
     def __init__(self, collection_name: str = "log_embeddings", path: str = "./chroma_db"):
+        self.logger = logging.getLogger(__name__)
         self.client = chromadb.PersistentClient(path=path)
         self.collection = self._get_or_create_collection(collection_name)
 
@@ -15,63 +16,62 @@ class ChromaClient:
         """
         try:
             collection = self.client.get_collection(name=collection_name)
-            print(f"Collection '{collection_name}' already exists.")
-        except: # chromadb.exceptions.CollectionNotFoundError:
+            self.logger.info(f"Collection '{collection_name}' already exists.")
+        except:  # chromadb.exceptions.CollectionNotFoundError:
             collection = self.client.create_collection(name=collection_name)
-            print(f"Collection '{collection_name}' created.")
+            self.logger.info(f"Collection '{collection_name}' created.")
         return collection
 
-    def add_log_embedding(self, log_entry: str, embedding: List[float], metadata: Optional[Dict] = None) -> None:
+    def add_single_embedding(self, document: str, embedding: List[float], metadata: Optional[Dict] = None) -> None:
         """
         Adds a single log entry and its embedding to the ChromaDB collection.
         Generates a unique ID for each entry.
         """
         try:
             self.collection.add(
-                documents=[log_entry],
+                documents=[document],
                 embeddings=[embedding],
-                metadatas=[metadata if metadata else {"source": "log_processor"}],
+                metadatas=[metadata],
                 ids=[str(uuid.uuid4().hex)]
             )
-            print(f"Successfully added log entry to collection '{self.collection.name}'.")
+            self.logger.info(f"Successfully added log entry to collection '{self.collection.name}'.")
         except Exception as e:
-            print(f"Error adding log embedding to ChromaDB: {e}")
+            self.logger.info(f"Error adding log embedding to ChromaDB: {e}")
 
     def add_embeddings_to_db(
-        self,
-        texts: List[str],
-        embeddings: List[List[float]],
-        metadatas: Optional[List[Dict]] = None,
-        ids: Optional[List[str]] = None
+            self,
+            documents: List[str],
+            embeddings: List[List[float]],
+            metadatas: Optional[List[Dict]] = None,
+            ids: Optional[List[str]] = None
     ) -> None:
         """
         Adds texts, embeddings, and optional metadata to a ChromaDB collection.
         If IDs are not provided, ChromaDB will generate them automatically.
         """
         if not ids:
-            # Generate simple IDs if not provided
-            ids = [f"doc{i}" for i in range(len(texts))]
+            ids = [str(uuid.uuid4().hex) for _ in range(len(documents))]
 
-        # Ensure metadatas list matches the length of texts if provided
-        if metadatas and len(metadatas) != len(texts):
-            raise ValueError("Length of metadatas must match length of texts.")
+        if metadatas and len(metadatas) != len(documents):
+            self.logger.warning("Length of metadatas does not match length of documents.")
+            raise ValueError("Length of metadatas must match length of documents.")
 
         try:
             self.collection.add(
-                documents=texts,
+                documents=documents,
                 embeddings=embeddings,
                 metadatas=metadatas,
                 ids=ids
             )
-            print(f"Successfully added {len(texts)} embeddings to collection '{self.collection.name}'.")
+            self.logger.info(f"Successfully added {len(documents)} embeddings to collection '{self.collection.name}'.")
         except Exception as e:
-            print(f"Error adding embeddings to ChromaDB: {e}")
+            self.logger.error(f"Error adding embeddings to ChromaDB: {e}")
 
     def query_logs(
-        self,
-        query_embeddings: List[List[float]],
-        where: Optional[Dict[str, Union[str, int, float]]] = None,
-        n_results: int = 5
+            self,
+            query_embeddings: List[List[float]],
+            where: Optional[Dict[str, Union[str, int, float]]] = None,
+            n_results: int = 5
     ):
         try:
             collection_results = self.collection.query(
@@ -82,7 +82,7 @@ class ChromaClient:
             )
             return collection_results
         except Exception as e:
-            print(f"Error querying ChromaDB: {e}")
+            self.logger.info(f"Error querying ChromaDB: {e}")
             return {"error": str(e)}
 
     def get_logs(
@@ -96,43 +96,5 @@ class ChromaClient:
             )
             return collection_results
         except Exception as e:
-            print(f"Error retrieving logs from ChromaDB: {e}")
+            self.logger.info(f"Error retrieving logs from ChromaDB: {e}")
             return {"error": str(e)}
-
-# Example Usage
-if __name__ == "__main__":
-    from backend.repositories.vector_chroma_db.log_processor import log_to_text, generate_embedding
-
-    # Initialize ChromaClient
-    chroma_client = ChromaClient(collection_name="downtime_logs")
-
-    # Prepare some example log entries
-    example_logs = [
-        {'id': 1, 'timestamp': '2025-09-22 09:15:00', 'machine_id': 'M3', 'reason_code': 'SENSOR_FAIL', 'duration_minutes': 25},
-        {'id': 2, 'timestamp': '2025-09-22 14:30:00', 'machine_id': 'M1', 'reason_code': 'MATERIAL_JAM', 'duration_minutes': 40},
-        {'id': 3, 'timestamp': '2025-09-23 11:05:00', 'machine_id': 'M2', 'reason_code': 'LUBE_LOW', 'duration_minutes': 35},
-        {'id': 4, 'timestamp': '2025-09-23 15:10:00', 'machine_id': 'M2', 'reason_code': 'OVERHEAT', 'duration_minutes': 55},
-    ]
-
-    # Process logs and add to the database
-    for log in example_logs:
-        text = log_to_text(log)
-        embedding = generate_embedding(text)
-        if embedding:
-            chroma_client.add_log_embedding(text, embedding, metadata=log)
-
-    # Query the database
-    query_text = "What caused machine M3 to stop?"
-    query_embedding = generate_embedding(query_text)
-
-    if query_embedding:
-        print(f"\nQuerying for: '{query_text}'")
-        results = chroma_client.query_logs([query_embedding], n_results=3)
-        print("Query Results:")
-        for i in range(len(results['documents'][0])):
-            print(f"  Document: {results['documents'][0][i]}")
-            print(f"  Distance: {results['distances'][0][i]}")
-            print(f"  Metadata: {results['metadatas'][0][i]}")
-            print("---------------------")
-    else:
-        print("Could not generate embedding for query.")

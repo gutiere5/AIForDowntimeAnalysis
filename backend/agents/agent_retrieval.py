@@ -2,6 +2,7 @@ from backend.repositories.vector_chroma_db.chroma_client import ChromaClient
 from sentence_transformers import SentenceTransformer
 import logging
 
+
 class AgentRetrieval:
     def __init__(self):
         self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -12,9 +13,10 @@ class AgentRetrieval:
         task_type = task.get('type')
         filters = task.get('filters', None)
         query_text = task.get('query_text')
-        chroma_filters = filters if filters else None # TODO refactor this later, improve since it was a bug
-
-        self.logger.info(f"AgentRetrieval: Retrieving data for task type '{task_type}' with query '{query_text}' and filters '{chroma_filters}'")
+        chroma_filters = filters if filters else None
+        
+        self.logger.info(
+            f"AgentRetrieval: Retrieving data for task type '{task_type}' with query '{query_text}' and filters '{chroma_filters}'")
 
         if task_type == 'metadata_query':
             return self.chroma_client.get_logs(where=chroma_filters)
@@ -26,6 +28,6 @@ class AgentRetrieval:
         elif task_type == 'hybrid_query':
             query_embedding = self.embedding_model.encode(query_text).tolist()
             return self.chroma_client.query_logs(query_embeddings=[query_embedding], n_results=10, where=chroma_filters)
-
         else:
+            self.logger.warning(f"AgentRetrieval: Unknown task type '{task_type}'")
             return {"error": f"Unknown task type: {task_type}"}
