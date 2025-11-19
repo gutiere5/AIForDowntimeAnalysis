@@ -1,10 +1,11 @@
 from backend.agents.llm_models.huggingface_inference_client import HuggingFaceInferenceService
-from backend.new_agents.utils.orchestrator_prompt import ORCHESTRATOR_PROMPT_TEMPLATE, EXAMPLES, PLAN_SCHEMA
+from backend.agents.utils.orchestrator_prompt import ORCHESTRATOR_PROMPT_TEMPLATE, EXAMPLES, PLAN_SCHEMA
 from typing import Dict, Any
 import logging
 import json
 import re
 import datetime
+
 
 class AgentOrchestrator:
     def __init__(self):
@@ -44,13 +45,10 @@ class AgentOrchestrator:
             self.logger.error(f"Orchestrator Error: {e}")
             self.logger.error(f"Raw Response: {response}")
 
+
 if __name__ == "__main__":
     orchestrator = AgentOrchestrator()
     user_query = "Schedule maintenance for machine M2 next week."
     plan = orchestrator.get_plan_from_orchestrator(user_query)
     print("Generated Plan:")
     print(json.dumps(plan, indent=2))
-
-
-
-
