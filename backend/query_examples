@@ -1,0 +1,32 @@
+### Category 1: Specific Log Retrieval
+*(These queries test the `AgentRetrieval` spoke, using both metadata and hybrid filters.)*
+
+* "What was the total downtime for line MEA204-1 last week?"
+* "Show me all downtime events that were longer than 45 minutes."
+* "How much downtime did we have yesterday across all lines?"
+* "Find all logs from July 25th between 8:00 PM and 11:00 PM."
+* "Were there any 'top tool cleaning' events on line MEA204-1 this month?"
+* "Pull the log for the 'iai error' on line ECW103."
+
+### Category 2: Trend & Pattern Analysis
+*(These queries test the full `Retrieve` $\rightarrow$ `Analyze` $\rightarrow$ `Synthesize` flow, requiring the `AnalysisAgent` to perform clustering and aggregation.)*
+
+* "What was the single biggest cause of downtime last month?"
+* "Which line had the most downtime this quarter?"
+* "What are the top 3 most *frequent* downtime reasons on line MEA101E?"
+* "Are 'pogo pin' issues getting more or less frequent?"
+* "Give me a summary of downtime patterns for last week."
+* "Compare the downtime performance of line ECW101 and ECW102."
+
+### Category 3: Solution & "Fix" Finding
+*(These queries test the *semantic search* capability of the `AgentRetrieval` spoke, focusing on the content of the `Notes`.)*
+
+* "How do I fix an 'iai error'?"
+* "What's the solution for 'gold part failing rotation'?"
+* "Find logs where a 'stuck pin' issue was resolved."
+* "What did the technician do last time the 'tweezers got stuck'?"
+* "Search for any notes that mention 'reseated the fixture' and what the result was."
+* "Are there any successful workarounds for 'motor control errors'?"
+
+
+Notes:
