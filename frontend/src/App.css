@@ -1,0 +1,34 @@
+.app-container {
+    display: flex;
+    height: 100vh;
+    background-color: #171717;
+    gap: 10px;
+    padding: 10px;
+}
+
+.sidebar-wrapper {
+    flex: shrink 0;
+}
+
+.chatbot-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+@media (max-width: 1024px) {
+    .app-container {
+        padding: 16px;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-container {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .sidebar-wrapper {
+        display: none;
+    }
+}
