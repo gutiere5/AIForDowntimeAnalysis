@@ -42,6 +42,23 @@ def initialize_database():
         """)
         logger.info("Successfully verified 'idx_conversation_timestamp' index exists.")
 
+        # Create the conversations table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS conversations (
+                id TEXT PRIMARY KEY,
+                session_id TEXT NOT NULL,
+                title TEXT NOT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        logger.info("Successfully verified 'conversations' table exists.")
+
+        # Create an index for retrieving conversations by session
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_session_id ON conversations (session_id)
+        """)
+        logger.info("Successfully verified 'idx_session_id' index exists.")
+
         conn.commit()
         conn.close()
         logger.info("Database initialization complete.")
