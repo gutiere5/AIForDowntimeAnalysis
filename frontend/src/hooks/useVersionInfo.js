@@ -1,56 +1,57 @@
-// src/hooks/useVersionInfo.js
 import { useState, useEffect } from 'react';
 
-export const useVersionInfo = () => {
-  const [versionInfo, setVersionInfo] = useState({
-    frontend: {
-      appVersion: import.meta.env.VITE_APP_VERSION || 'unknown',
-      commitHash: import.meta.env.VITE_COMMIT_HASH || 'unknown',
-      buildDate: import.meta.env.VITE_BUILD_DATE || 'unknown',
-      environment: import.meta.env.MODE || 'unknown',
-    },
-    backend: {
-      appVersion: 'loading...',
-      environment: 'loading...',
-      commitHash: 'loading...',
-      buildDate: 'loading...',
-    },
+/**
+ * Custom hook to fetch version information for frontend and backend
+ */
+export function useVersionInfo() {
+  const [backend, setBackend] = useState({
+    app_version: 'Loading...',
+    environment: 'Loading...',
+    commit_hash: 'Loading...',
+    build_date: 'Loading...',
+  });
+
+  // Safely access environment variables with fallbacks
+  const [frontend] = useState({
+    appVersion: (import.meta?.env?.VITE_APP_VERSION) || '1.0.0',
+    environment: (import.meta?.env?.VITE_ENVIRONMENT) || (import.meta?.env?.MODE) || 'development',
+    commitHash: (import.meta?.env?.VITE_COMMIT_HASH) || 'local-dev',
+    buildDate: (import.meta?.env?.VITE_BUILD_DATE) || new Date().toISOString(),
   });
 
   useEffect(() => {
-    // This function runs once to fetch data from your backend
-    const fetchBackendInfo = async () => {
+    // Fetch backend version info
+    const fetchBackendVersion = async () => {
       try {
-        // This URL must match your running backend
-        const response = await fetch('http://localhost:8000/about');
+        // Get base URL from environment or default
+        const baseURL = (import.meta?.env?.VITE_API_BASE_URL) || 'http://localhost:8000';
 
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+        const response = await fetch(`${baseURL}/version`);
+
+        if (response.ok) {
+          const data = await response.json();
+          setBackend({
+            app_version: data.app_version || 'Unknown',
+            environment: data.environment || 'Unknown',
+            commit_hash: data.commit_hash || 'Unknown',
+            build_date: data.build_date || 'Unknown',
+          });
+        } else {
+          throw new Error('Failed to fetch version info');
         }
-
-        const data = await response.json();
-
-        setVersionInfo((prevInfo) => ({
-          ...prevInfo,
-          backend: data,
-        }));
-
       } catch (error) {
-        console.error("Failed to fetch backend version info:", error);
-        setVersionInfo((prevInfo) => ({
-          ...prevInfo,
-          backend: {
-            appVersion: 'Error',
-            environment: 'Error',
-            commitHash: 'Error',
-            buildDate: 'Error',
-          },
-        }));
+        console.error('Error fetching backend version:', error);
+        setBackend({
+          app_version: 'Error',
+          environment: 'Error',
+          commit_hash: 'Unable to connect',
+          build_date: 'N/A',
+        });
       }
     };
 
-    fetchBackendInfo();
-  }, []); // The empty [] means this only runs one time
+    fetchBackendVersion();
+  }, []);
 
-  return versionInfo;
-};
+  return { frontend, backend };
+}
