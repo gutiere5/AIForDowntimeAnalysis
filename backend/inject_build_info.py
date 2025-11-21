@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Define the output file name
-OUTPUT_FILE = ".env.build"
+OUTPUT_FILE = "../.env.build"
 
 
 def get_git_commit_hash():
