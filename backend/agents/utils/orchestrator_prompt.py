@@ -4,6 +4,12 @@ Respond ONLY with a valid JSON object.
 
 Current date: {current_date_iso}
 
+## General Conversation
+If the user's query is a simple greeting, question about your identity, or other general conversation that does not require data retrieval or analysis, create a plan with a single "synthesis" step.
+
+## Filter Rules
+- When using filters, if there is only one filter condition, do not wrap it in an `$and` operator. The `$and` operator is only for combining two or more filter conditions.
+
 ## Available Agents & Tasks:
 1.  **agent: "retrieval"**
     * **task: {{ "type": "metadata_query", "filters": {{...}} }}**
@@ -52,9 +58,7 @@ EXAMPLES = [
               "task": {
                 "type": "metadata_query",
                 "filters": {
-                  "$and": [
-                    {"Line": "MEA204-1"}
-                  ],
+                  "Line": "MEA204-1",
                   "natural_language_date_start": "last week monday 00:00:00",
                   "natural_language_date_end": "last week sunday 23:59:59"
                 }
@@ -192,6 +196,37 @@ EXAMPLES = [
               }
             },
             { "agent": "analysis", "task": {"type": "aggregate_by_line"} },
+            { "agent": "synthesis" }
+          ]
+        }
+        """
+    },
+    # --- Category 4: General Conversation ---
+    {
+        "role": "user",
+        "content": "Hello, how are you?"
+    },
+    {
+        "role": "assistant",
+        "content": """
+        {
+          "user_query": "Hello, how are you?",
+          "steps": [
+            { "agent": "synthesis" }
+          ]
+        }
+        """
+    },
+    {
+        "role": "user",
+        "content": "Thanks!"
+    },
+    {
+        "role": "assistant",
+        "content": """
+        {
+          "user_query": "Thanks!",
+          "steps": [
             { "agent": "synthesis" }
           ]
         }

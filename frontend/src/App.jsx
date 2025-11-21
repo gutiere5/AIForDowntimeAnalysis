@@ -10,14 +10,14 @@ export default function App() {
   const [sessionId, setSessionId] = useState(null);
 
   useEffect(() => {
-    let sessiong_id = localStorage.getItem('session_id');
-    if (!sessiong_id) {
-      sessiong_id = crypto.randomUUID();
-      localStorage.setItem('session_id', sessiong_id);
+    let session_id = localStorage.getItem('session_id');
+    if (!session_id) {
+      session_id = crypto.randomUUID();
+      localStorage.setItem('session_id', session_id);
     }
-    setSessionId(sessiong_id);
+    setSessionId(session_id);
 
-    api.getConversations(sessiong_id).then(data => {
+    api.getConversations(session_id).then(data => {
       setConversations(data.conversations);
       if (data.conversations.length > 0) {
         setActiveConversationId(data.conversations[0].conversation_id);
@@ -39,6 +39,8 @@ export default function App() {
           conversations={conversations}
           activeConversationId={activeConversationId}
           setActiveConversationId={setActiveConversationId}
+          sessionId={sessionId}
+          setConversations={setConversations}
         />
       </div>
       <div className='chatbot-wrapper'>

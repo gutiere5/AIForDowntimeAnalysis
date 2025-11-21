@@ -1,7 +1,9 @@
+import datetime
 from typing import Generator
 import json
 import logging
 from backend.agents.utils.schemas import RequestContext
+from backend.agents.utils.date_converter import convert_dates_in_plan
 from backend.repositories.conversation_repo import conversations_repository
 from backend.agents.agent_orchestrator2 import AgentOrchestrator
 from backend.agents.agent_retrieval import AgentRetrieval
@@ -29,39 +31,69 @@ class MainAgent:
             conversations_repository.add_message(context.conversation_id, context.session_id, 'user', query)
 
             # Retrieve conversation history
-            conversation_history_list = conversations_repository.get_messages_by_conversation_id(
-                context.conversation_id,
-                context.session_id)
+            # conversation_history_list = conversations_repository.get_messages_by_conversation_id(
+            #     context.conversation_id,
+            #     context.session_id)
 
             # Get plan from orchestrator
             plan = self.agent_orchestrator.get_plan_from_orchestrator(query)
+            self.logger.info(f"Plan from orchestrator: {plan}")
 
-            if "error" in plan:
-                yield f"data: {json.dumps({'type': 'error', 'message': plan['error']})}\n\n"
+            if "error" in plan or not plan.get("steps"):
+                self.logger.warning(f"Orchestrator failed to generate a valid plan. Falling back to synthesis.")
+                fallback_data = {
+                    "message": "I was unable to generate a structured plan to answer your query, but I will do my best to answer directly."
+                }
+                final_answer = self.agent_synthesizer.stream_final_response(query, fallback_data, context)
+                for chunk in final_answer:
+                    yield chunk
                 return
+
+            execution_datetime = datetime.datetime.now()
+            plan = convert_dates_in_plan(plan, execution_datetime)
+            self.logger.info(f"Plan after date conversion: {plan}")
 
             for i, step in enumerate(plan['steps']):
                 agent_name = step.get('agent')
                 task = step.get('task')
                 self.logger.info(f"{self.name}: Starting step {i + 1} with agent {agent_name}")
 
-                if agent_name == 'retrieval':
-                    self.logger.info(f"{self.name}: Retrieval step with task: {task}")
-                    self.current_data = self.agent_retrieval.retrieve_data(task)
-                    if self.current_data and self.current_data.get('ids'):
-                        self.logger.info(f"Agent Retrieval Found {len(self.current_data['ids'])} logs")
-                        first_log = {'id': self.current_data['ids'][0], 'document': self.current_data['documents'][0],
-                                     'metadata': self.current_data['metadatas'][0]}
-                        self.logger.info(f"Agent Retrieval: Example of a log: {first_log}")
+                try:
+                    if agent_name == 'retrieval':
+                        self.logger.info(f"{self.name}: Retrieval step with task: {task}")
+                        self.current_data = self.agent_retrieval.retrieve_data(task)
+                        if self.current_data and self.current_data.get('ids'):
+                            self.logger.info(f"Agent Retrieval Found {len(self.current_data['ids'])} logs")
+                            first_log = {'id': self.current_data['ids'][0],
+                                         'document': self.current_data['documents'][0],
+                                         'metadata': self.current_data['metadatas'][0]}
+                            self.logger.info(f"Agent Retrieval: Example of a log: {first_log}")
 
-                elif agent_name == 'analysis':
-                    self.current_data = self.agent_analysis.execute_analysis_task(task, self.current_data)
-                    self.logger.info(f"Analysis Agent Result: {self.current_data}")
+                    elif agent_name == 'analysis':
+                        self.current_data = self.agent_analysis.execute_analysis_task(task, self.current_data)
+                        self.logger.info(f"Analysis Agent Result: {self.current_data}")
 
-                elif agent_name == 'synthesis':
-                    final_answer = self.agent_synthesizer.stream_final_response(query, self.current_data)
-                    for chunk in final_answer:
-                        yield chunk
+                    elif agent_name == 'synthesis':
+                        final_answer = self.agent_synthesizer.stream_final_response(query, self.current_data, context)
+                        for chunk in final_answer:
+                            # self.logger.info(f"MainAgent yielding chunk: {chunk}")
+                            yield chunk
+                        return
+
+                    if self.current_data and 'error' in self.current_data:
+                        self.logger.error(f"Error in step {i + 1} ({agent_name}): {self.current_data['error']}")
+                        break
+
+                except Exception as e:
+                    self.logger.error(f"An unexpected error occurred in {agent_name} agent: {e}", exc_info=True)
+                    self.current_data = {"error": f"An unexpected error occurred in the {agent_name} agent."}
+                    break
+
+            if self.current_data and 'error' in self.current_data:
+                final_answer = self.agent_synthesizer.stream_final_response(query, self.current_data, context)
+                for chunk in final_answer:
+                    yield chunk
+
         except Exception as e:
             self.logger.error(f"{self.name}: Error processing query: {e}")
             yield f"data: {json.dumps({'type': 'error', 'message': 'An error occurred while processing your query.'})}\n\n"

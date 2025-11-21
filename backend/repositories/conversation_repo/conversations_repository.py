@@ -5,23 +5,41 @@ from backend.repositories.conversation_repo.database import get_db_connection
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 def add_message(conversation_id: str, session_id: str, role: str, content: str):
-    """Adds a new message to the database for a given conversation."""
+    """Adds a new message and ensures a conversation entry exists."""
     logger.info(f"Adding message for conversation {conversation_id}. Role: {role}")
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+
+        # Check if a conversation entry already exists
+        cursor.execute("SELECT 1 FROM conversations WHERE id = ?", (conversation_id,))
+        conversation_exists = cursor.fetchone() is not None
+
+        # If it's the first user message, create the conversation entry
+        if not conversation_exists and role == 'user':
+            # Use the first user message as the title, truncating if necessary
+            title = content if len(content) <= 100 else content[:97] + "..."
+            cursor.execute(
+                "INSERT INTO conversations (id, session_id, title) VALUES (?, ?, ?)",
+                (conversation_id, session_id, title)
+            )
+            logger.info(f"Created new conversation entry for {conversation_id} with title '{title}'.")
+
+        # Insert the message
         cursor.execute(
             "INSERT INTO messages (conversation_id, session_id, role, content) VALUES (?, ?, ?, ?)",
             (conversation_id, session_id, role, content)
         )
+
         conn.commit()
         conn.close()
         logger.info(f"Successfully added message for conversation {conversation_id}.")
     except Exception as e:
         logger.error(f"Failed to add message for conversation {conversation_id}: {e}")
-        # Depending on the application's needs, you might want to handle this more gracefully
         raise
+
 
 def get_messages_by_conversation_id(conversation_id: str, session_id: str) -> list[dict]:
     """Retrieves all messages for a conversation, ensuring the session_id matches."""
@@ -68,34 +86,83 @@ def get_messages_by_conversation_id(conversation_id: str, session_id: str) -> li
         logger.error(f"Failed to retrieve messages for conversation {conversation_id}: {e}")
         raise
 
+
 def get_conversations_by_session_id(session_id: str) -> list[dict]:
-    """Retrieves all unique conversations for a given session."""
+    """Retrieves all conversations for a given session from the 'conversations' table."""
     logger.info(f"Retrieving all conversations for session {session_id}")
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        
-        # Retrieve the most recent message content for each conversation as its title
-        cursor.execute("""
-            SELECT m.conversation_id, (
-                SELECT content 
-                FROM messages 
-                WHERE conversation_id = m.conversation_id AND role = 'user'
-                ORDER BY timestamp DESC 
-                LIMIT 1
-            ) as title
-            FROM messages m
-            WHERE m.session_id = ?
-            GROUP BY m.conversation_id
-            ORDER BY MAX(m.timestamp) DESC
-        """, (session_id,))
-        
+
+        cursor.execute(
+            "SELECT id as conversation_id, title FROM conversations WHERE session_id = ? ORDER BY created_at DESC",
+            (session_id,)
+        )
+
         conversations = cursor.fetchall()
         conn.close()
-        
+
         logger.info(f"Successfully retrieved {len(conversations)} conversations for session {session_id}.")
         return [dict(row) for row in conversations]
 
     except Exception as e:
         logger.error(f"Failed to retrieve conversations for session {session_id}: {e}")
+        raise
+
+
+def delete_conversation(conversation_id: str, session_id: str):
+    """Deletes a conversation and all its associated messages."""
+    logger.info(f"Deleting conversation {conversation_id} for session {session_id}")
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Check if the conversation belongs to the session (for security)
+        cursor.execute(
+            "SELECT 1 FROM conversations WHERE id = ? AND session_id = ?",
+            (conversation_id, session_id)
+        )
+        if cursor.fetchone() is None:
+            logger.warning(f"Unauthorized attempt to delete conversation {conversation_id} by session {session_id}")
+            raise Exception("Conversation not found or access denied.")
+
+        # Delete from conversations table
+        cursor.execute("DELETE FROM conversations WHERE id = ?", (conversation_id,))
+
+        # Delete from messages table
+        cursor.execute("DELETE FROM messages WHERE conversation_id = ?", (conversation_id,))
+
+        conn.commit()
+        conn.close()
+        logger.info(f"Successfully deleted conversation {conversation_id}.")
+    except Exception as e:
+        logger.error(f"Failed to delete conversation {conversation_id}: {e}")
+        raise
+
+
+def update_conversation_title(conversation_id: str, session_id: str, new_title: str):
+    """Updates the title of a specific conversation."""
+    logger.info(f"Updating title for conversation {conversation_id} to '{new_title}'")
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Check if the conversation belongs to the session (for security)
+        cursor.execute(
+            "SELECT 1 FROM conversations WHERE id = ? AND session_id = ?",
+            (conversation_id, session_id)
+        )
+        if cursor.fetchone() is None:
+            logger.warning(f"Unauthorized attempt to update conversation {conversation_id} by session {session_id}")
+            raise Exception("Conversation not found or access denied.")
+
+        cursor.execute(
+            "UPDATE conversations SET title = ? WHERE id = ?",
+            (new_title, conversation_id)
+        )
+        conn.commit()
+        conn.close()
+        logger.info(f"Successfully updated title for conversation {conversation_id}.")
+    except Exception as e:
+        logger.error(f"Failed to update title for conversation {conversation_id}: {e}")
         raise

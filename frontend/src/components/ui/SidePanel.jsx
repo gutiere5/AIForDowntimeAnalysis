@@ -1,25 +1,48 @@
 import { useState } from "react";
-import { Plus, MessageSquare, Trash2, FileText, ExternalLink, Power, Sun, Moon } from "lucide-react";
+import { Plus, MessageSquare, Trash2, FileText, ExternalLink, Power, Sun, Moon, Pencil } from "lucide-react";
 import AboutModal from "./AboutModal";
+import api from "@/api";
 import "./SidePanel.css";
 
-export default function SidePanel() {
+export default function SidePanel({ conversations, activeConversationId, setActiveConversationId, sessionId, setConversations }) {
     const [theme, setTheme] = useState("dark");
     const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
-    const [chats, setChats] = useState([
-        { id: 1, text: "What were major downtime issues?", isActive: true },
-        { id: 2, text: "How to fix a machine that is..." },
-        { id: 3, text: "What are some trends this..." },
-        { id: 4, text: "Create graphs based on..." },
-    ]);
-
-    const handleDeleteChat = (id) => {
-        setChats(chats.filter(chat => chat.id !== id));
-    };
+    const [editingConversationId, setEditingConversationId] = useState(null);
+    const [editingTitle, setEditingTitle] = useState("");
 
     const handleClearAll = () => {
-        setChats([]);
+        // This should ideally trigger a backend call to delete all conversations
+        // and then update the state in the parent component.
+        // For now, we'll just clear the frontend state via the passed-in setter.
+        // setConversations([]);
+        console.log("Clearing all conversations is not implemented yet.");
     };
+
+    const handleDelete = async (conversationId) => {
+        try {
+            await api.deleteConversation(conversationId, sessionId);
+            setConversations(prev => prev.filter(c => c.conversation_id !== conversationId));
+        } catch (error) {
+            console.error("Failed to delete conversation:", error);
+        }
+    };
+
+    const handleUpdateTitle = async (conversationId) => {
+        try {
+            await api.updateConversationTitle(conversationId, sessionId, editingTitle);
+            setConversations(prev => prev.map(c =>
+                c.conversation_id === conversationId ? { ...c, title: editingTitle } : c
+            ));
+            setEditingConversationId(null);
+        } catch (error) {
+            console.error("Failed to update conversation title:", error);
+        }
+    };
+
+    const handleNewChat = () => {
+        setActiveConversationId(null);
+    };
+
 
     return (
         <>
@@ -59,30 +82,61 @@ export default function SidePanel() {
 
                     {/* Chat List */}
                     <div className="chat-list">
-                        {chats.map((chat) => (
+                        {conversations.map((chat) => (
                             <div
-                                key={chat.id}
-                                className={`chat-item ${chat.isActive ? "active" : ""}`}
+                                key={chat.conversation_id}
+                                className={`chat-item ${chat.conversation_id === activeConversationId ? "active" : ""}`}
+                                onClick={() => setActiveConversationId(chat.conversation_id)}
                             >
-                                <MessageSquare className={`chat-icon ${chat.isActive ? "active" : ""}`} />
-                                <p className={`chat-text ${chat.isActive ? "active" : ""}`}>
-                                    {chat.text}
-                                </p>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteChat(chat.id);
-                                    }}
-                                    className="delete-button"
-                                >
-                                    <Trash2 className="delete-icon" />
-                                </button>
+                                <MessageSquare className={`chat-icon ${chat.conversation_id === activeConversationId ? "active" : ""}`} />
+                                {editingConversationId === chat.conversation_id ? (
+                                    <input
+                                        type="text"
+                                        value={editingTitle}
+                                        onChange={(e) => setEditingTitle(e.target.value)}
+                                        onBlur={() => handleUpdateTitle(chat.conversation_id)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                handleUpdateTitle(chat.conversation_id);
+                                            } else if (e.key === 'Escape') {
+                                                setEditingConversationId(null);
+                                            }
+                                        }}
+                                        autoFocus
+                                        className="edit-input"
+                                    />
+                                ) : (
+                                    <p className={`chat-text ${chat.conversation_id === activeConversationId ? "active" : ""}`}>
+                                        {chat.title}
+                                    </p>
+                                )}
+                                <div className="chat-actions">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setEditingConversationId(chat.conversation_id);
+                                            setEditingTitle(chat.title);
+                                        }}
+                                        className="edit-button"
+                                    >
+                                        <Pencil className="edit-icon" />
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDelete(chat.conversation_id);
+                                        }}
+                                        className="delete-button"
+                                    >
+                                        <Trash2 className="delete-icon" />
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
 
                     {/* New Chat Button */}
-                    <button className="new-chat-button">
+                    <button className="new-chat-button" onClick={handleNewChat}>
                         <Plus className="new-chat-icon" />
                         <span className="new-chat-text">Start a new chat</span>
                     </button>

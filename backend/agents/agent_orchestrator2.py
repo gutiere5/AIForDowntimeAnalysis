@@ -44,6 +44,7 @@ class AgentOrchestrator:
             self.logger.error(f"Orchestrator Error: Failed to generate plan.")
             self.logger.error(f"Orchestrator Error: {e}")
             self.logger.error(f"Raw Response: {response}")
+            return {"error": "Failed to generate a valid plan."}
 
 
 if __name__ == "__main__":

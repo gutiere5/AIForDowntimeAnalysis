@@ -56,7 +56,7 @@ class AgentAnalysis:
             return {"top_lines_by_downtime": top_lines_formatted}
 
         elif analysis_type == 'cluster_and_aggregate':
-            print("🔬 [Analysis] Clustering notes to find top causes...")
+            self.logger.info("🔬 [Analysis] Clustering notes to find top causes...")
 
             logs_with_notes = []
             for i in range(len(data['ids'])):
@@ -72,12 +72,29 @@ class AgentAnalysis:
 
             embeddings = np.array([log['embedding'] for log in logs_with_notes])
 
-            pca = PCA(n_components=20, random_state=42)
+            # Determine the number of components for PCA dynamically
+            n_samples, n_features = embeddings.shape
+            n_components = min(n_samples, n_features, 20)
+
+            # Ensure n_components is at least 1
+            if n_components == 0:
+                return {"error": "Not enough data to perform analysis."}
+
+            pca = PCA(n_components=n_components, random_state=42)
             reduced_embeddings = pca.fit_transform(embeddings)
 
             n_clusters = 5
             if len(logs_with_notes) < n_clusters:
                 n_clusters = len(logs_with_notes)
+
+            # Ensure n_clusters is not greater than n_samples
+            if n_clusters > n_samples:
+                n_clusters = n_samples
+            
+            # Ensure n_clusters is at least 1
+            if n_clusters == 0:
+                return {"error": "Not enough data to perform clustering."}
+
 
             kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
             clusters = kmeans.fit_predict(reduced_embeddings)

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import api from '@/api';
 import { parseSSEStream } from '@/utils';
 import ChatMessages from '@/components/ui/ChatMessages';
@@ -8,6 +8,15 @@ import "./Chatbot.css";
 export default function Chatbot({ sessionId, activeConversationId, onNewConversation }) {
   const [messages, setMessages] = useState([]);
   const firstTokenRef = useRef(false);
+
+  useEffect(() => {
+    if (activeConversationId) {
+      setMessages([]);
+      api.getHistory(activeConversationId, sessionId).then(history => {
+        setMessages(history.messages);
+      });
+    }
+  }, [activeConversationId, sessionId]);
 
   const isLoading = messages.length > 0 && messages[messages.length - 1].loading;
   const hasMessages = messages.length > 0;
@@ -51,10 +60,17 @@ export default function Chatbot({ sessionId, activeConversationId, onNewConversa
           }
 
           setMessages(prev => {
-            const updated = [...prev];
-            const lastMessage = updated[updated.length - 1];
-            lastMessage.content += token;
-            return updated;
+            const newMessages = [...prev];
+            const lastMessage = newMessages[newMessages.length - 1];
+            const updatedContent = lastMessage.content + token;
+            const formattedContent = updatedContent.replace(/([^\n]) ?•/g, '$1\n •');
+
+            const updatedMessage = {
+              ...lastMessage,
+              content: formattedContent,
+            };
+            newMessages[newMessages.length - 1] = updatedMessage;
+            return newMessages;
           });
         } else if (evt.type === 'error') {
           setMessages(prev => {
@@ -62,7 +78,7 @@ export default function Chatbot({ sessionId, activeConversationId, onNewConversa
             const lastMessage = updated[updated.length - 1];
             lastMessage.loading = false;
             lastMessage.error = true;
-            lastMessage.content += (lastMessage.content ? '\n\n' : '') + evt.message;
+            lastMessage.content = evt.message;
             return updated;
           });
           break;
