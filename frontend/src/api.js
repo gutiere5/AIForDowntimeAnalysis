@@ -47,4 +47,31 @@ async function getConversations(sessionId) {
   return response.json();
 }
 
-export default { sendChatMessage, getHistory, getConversations };
+async function deleteConversation(conversationId, sessionId) {
+    const response = await fetch(`${BASE_URL}/conversations/${conversationId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId }),
+    });
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+}
+
+async function updateConversationTitle(conversationId, sessionId, newTitle) {
+    const response = await fetch(`${BASE_URL}/conversations/${conversationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            session_id: sessionId,
+            new_title: newTitle,
+        }),
+    });
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+}
+
+export default { sendChatMessage, getHistory, getConversations, deleteConversation, updateConversationTitle };

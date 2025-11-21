@@ -19,26 +19,26 @@ export async function* parseSSEStream(stream) {
       if (raw.startsWith('{') && raw.endsWith('}')) {
         try {
           const evt = JSON.parse(raw);
-            if (evt.type === 'chunk' && typeof evt.content === 'string') {
-              yield { type: 'chunk', content: evt.content };
-            } else if (evt.type === 'done') {
-              yield { type: 'done' };
-              return;
-            } else if (evt.type === 'conversation_id' && typeof evt.id === 'string') {
-              yield { type: 'conversation_id', id: evt.id };
-            } else {
-              // Unknown JSON -> treat as text chunk
-              yield { type: 'chunk', content: raw };
-            }
-          continue;
+          if (evt.type === 'chunk' && typeof evt.content === 'string') {
+            yield { type: 'chunk', content: evt.content };
+            continue;
+          } else if (evt.type === 'done') {
+            yield { type: 'done' };
+            return;
+          } else if (evt.type === 'error' && typeof evt.message === 'string') {
+            yield { type: 'error', message: evt.message };
+            continue;
+          } else if (evt.type === 'conversation_id' && typeof evt.id === 'string') {
+            yield { type: 'conversation_id', id: evt.id };
+            continue;
+          }
         } catch {
-          // Fall through to treat as text
+          // Not a valid JSON, fall through to treat as a raw chunk
         }
       }
-      if (raw.startsWith('Error:')) {
-        yield { type: 'error', message: raw };
-        continue;
-      }
+
+      // If we reach here, it's either not JSON, or it's a JSON shape we
+      // don't recognize. In either case, we'll treat it as a raw text chunk.
       yield { type: 'chunk', content: raw };
     }
   } finally {
