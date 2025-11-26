@@ -1,4 +1,6 @@
 import logging
+import uuid
+
 from backend.repositories.conversation_repo.database import get_db_connection
 
 # Configure logging
@@ -38,6 +40,26 @@ def add_message(conversation_id: str, session_id: str, role: str, content: str):
         logger.info(f"Successfully added message for conversation {conversation_id}.")
     except Exception as e:
         logger.error(f"Failed to add message for conversation {conversation_id}: {e}")
+        raise
+
+
+def create_conversation(session_id: str, title: str = "New Conversation") -> dict:
+    """Creates a new conversation entry and returns it."""
+    conversation_id = str(uuid.uuid4())
+    logger.info(f"Creating new conversation for session {session_id} with title '{title}'.")
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO conversations (id, session_id, title) VALUES (?, ?, ?)",
+            (conversation_id, session_id, title)
+        )
+        conn.commit()
+        conn.close()
+        logger.info(f"Successfully created new conversation {conversation_id}.")
+        return {"conversation_id": conversation_id, "title": title}
+    except Exception as e:
+        logger.error(f"Failed to create new conversation for session {session_id}: {e}")
         raise
 
 

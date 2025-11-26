@@ -35,6 +35,13 @@ class AgentOrchestrator:
             )
 
             json_str = response.choices[0].message.content.strip()
+            json_str = response.choices[0].message.content.strip()
+
+            if "```" in json_str:
+                json_str = json_str.replace("```json", "").replace("```", "")
+
+            json_str = re.sub(r'\s+', ' ', json_str).strip()
+            plan = json.loads(json_str)
             json_str = re.sub(r'\s+', ' ', json_str).strip()
             plan = json.loads(json_str)
             self.logger.info(f"Orchestrator Generated Plan: {plan}")

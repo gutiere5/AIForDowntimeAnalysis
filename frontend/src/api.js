@@ -74,4 +74,16 @@ async function updateConversationTitle(conversationId, sessionId, newTitle) {
     return response.json();
 }
 
-export default { sendChatMessage, getHistory, getConversations, deleteConversation, updateConversationTitle };
+async function createConversation(sessionId) {
+    const response = await fetch(`${BASE_URL}/conversations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId }),
+    });
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+}
+
+export default { sendChatMessage, getHistory, getConversations, deleteConversation, updateConversationTitle, createConversation };

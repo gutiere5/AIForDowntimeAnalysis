@@ -34,7 +34,7 @@
 .input-wrapper-centered {
     margin: 0 auto 80px auto;
     width: 100%;
-    max-width: 800px;
+    max-width: 1000px;
     padding: 0 24px;
 }
 
@@ -55,6 +55,24 @@
     gap: 16px;
     align-items: center;
     margin-bottom: 32px;
+    justify-content: center;
+}
+
+.welcome-message-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centers vertically */
+    align-items: center;   /* Centers horizontally */
+    height: 100%; /* Ensure it takes full height to center within chat-content-inner */
+    width: 100%;
+}
+
+.welcome-message-container > .title-group {
+    margin: 0 0 16px 0; /* Override previous margin, add some bottom margin for spacing */
+}
+
+.welcome-message-container > .input-wrapper-centered {
+    margin: 0; /* Remove all margins */
 }
 
 .title {

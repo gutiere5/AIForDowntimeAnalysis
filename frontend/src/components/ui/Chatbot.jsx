@@ -11,10 +11,11 @@ export default function Chatbot({ sessionId, activeConversationId, onNewConversa
 
   useEffect(() => {
     if (activeConversationId) {
-      setMessages([]);
       api.getHistory(activeConversationId, sessionId).then(history => {
         setMessages(history.messages);
       });
+    } else {
+        setMessages([]);
     }
   }, [activeConversationId, sessionId]);
 
@@ -109,7 +110,7 @@ export default function Chatbot({ sessionId, activeConversationId, onNewConversa
     <div className="chat-content" data-name="Content">
       <div className="chat-content-inner">
         {!hasMessages ? (
-          <>
+          <div className="welcome-message-container">
             {/* Title Group - Only show when no messages */}
             <div className="title-group" data-name="Title group">
               <div className="title" data-name="Title">
@@ -121,14 +122,14 @@ export default function Chatbot({ sessionId, activeConversationId, onNewConversa
             <div className="input-wrapper-centered">
               <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
             </div>
-          </>
+          </div>
         ) : (
           <>
             {/* Messages Display */}
             <ChatMessages messages={messages} />
 
             {/* Chat Input */}
-            <div className="input-wrapper-bottom">
+            <div className="input-wrapper-fixed">
               <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
             </div>
           </>

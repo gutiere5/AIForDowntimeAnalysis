@@ -5,7 +5,7 @@ import logging
 from backend.agents.utils.schemas import RequestContext
 from backend.agents.utils.date_converter import convert_dates_in_plan
 from backend.repositories.conversation_repo import conversations_repository
-from backend.agents.agent_orchestrator2 import AgentOrchestrator
+from backend.agents.agent_orchestrator import AgentOrchestrator
 from backend.agents.agent_retrieval import AgentRetrieval
 from backend.agents.agent_analysis import AgentAnalysis
 from backend.agents.agent_synthesis import AgentSynthesis

@@ -4,7 +4,7 @@ import AboutModal from "./AboutModal";
 import api from "@/api";
 import "./SidePanel.css";
 
-export default function SidePanel({ conversations, activeConversationId, setActiveConversationId, sessionId, setConversations }) {
+export default function SidePanel({ conversations, activeConversationId, setActiveConversationId, sessionId, setConversations, onNewConversation }) {
     const [theme, setTheme] = useState("dark");
     const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
     const [editingConversationId, setEditingConversationId] = useState(null);
@@ -39,9 +39,15 @@ export default function SidePanel({ conversations, activeConversationId, setActi
         }
     };
 
-    const handleNewChat = () => {
-        setActiveConversationId(null);
+    const handleNewChat = async () => {
+        try {
+            const newConvo = await api.createConversation(sessionId);
+            onNewConversation(newConvo);
+        } catch (error) {
+            console.error("Failed to create new conversation:", error);
+        }
     };
+
 
 
     return (

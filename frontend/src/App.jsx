@@ -41,6 +41,7 @@ export default function App() {
           setActiveConversationId={setActiveConversationId}
           sessionId={sessionId}
           setConversations={setConversations}
+          onNewConversation={handleNewConversation}
         />
       </div>
       <div className='chatbot-wrapper'>
