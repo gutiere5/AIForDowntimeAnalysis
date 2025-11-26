@@ -1,6 +1,10 @@
-# AIForDowntimeAnalysis
+# Downtime Detective
 
-A web application for analyzing downtime using AI.
+Downtime Detective is an AI-powered web application designed to help users analyze downtime logs
+and investigate incidents. The application provides an intuitive chat interface where users can ask questions about
+downtime events in natural language. The backend, built with Python and FastAPI, utilizes an AI agents to process these
+queries, analyze the provided downtime logs, and provide insightful answers to help identify the root cause of
+incidents. The frontend is a modern and responsive React application.
 
 ## Project Structure
 
