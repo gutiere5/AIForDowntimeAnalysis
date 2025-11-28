@@ -40,12 +40,6 @@
     background: rgba(255, 255, 255, 0.3);
 }
 
-/* For Firefox */
-.sidebar-top {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-}
-
 /* User Profile */
 .user-profile {
     background-color: rgba(255, 255, 255, 0.05);
@@ -197,28 +191,108 @@
     color: #e5e5e5;
 }
 
-.delete-button {
-    opacity: 0;
-    transition: opacity 0.2s;
-    padding: 4px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
+/* Edit Input */
+.edit-input {
+    flex: 1;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: #e5e5e5;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
 }
 
-.chat-item:hover .delete-button {
+.edit-input:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Chat Actions Container */
+.chat-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.chat-item:hover .chat-actions {
     opacity: 1;
+}
+
+/* Edit Button */
+.edit-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    background-color: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.edit-button:hover {
+    background-color: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.edit-button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.15);
+}
+
+.edit-icon {
+    width: 14px;
+    height: 14px;
+    color: #34d399;
+    transition: color 0.2s;
+}
+
+.edit-button:hover .edit-icon {
+    color: #10b981;
+}
+
+/* Delete Button */
+.delete-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .delete-button:hover {
     background-color: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.delete-button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(239, 68, 68, 0.15);
 }
 
 .delete-icon {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     color: #f87171;
+    transition: color 0.2s;
+}
+
+.delete-button:hover .delete-icon {
+    color: #ef4444;
 }
 
 /* New Chat Button */

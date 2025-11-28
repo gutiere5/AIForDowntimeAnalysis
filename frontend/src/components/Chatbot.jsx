@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import api from '@/api';
-import { parseSSEStream } from '@/utils';
-import ChatMessages from '@/components/ui/ChatMessages';
-import ChatInput from '@/components/ui/ChatInput';
+import api from '@/assets/api';
+import { parseSSEStream } from '@/assets/utils';
+import ChatMessages from '@/components/ChatMessages';
+import ChatInput from '@/components/ChatInput';
 import "./Chatbot.css";
 
 export default function Chatbot({ sessionId, activeConversationId, onNewConversation }) {
@@ -11,7 +11,7 @@ export default function Chatbot({ sessionId, activeConversationId, onNewConversa
 
   useEffect(() => {
     if (activeConversationId) {
-      api.getHistory(activeConversationId, sessionId).then(history => {
+      api.getConversation(activeConversationId, sessionId).then(history => {
         setMessages(history.messages);
       });
     } else {

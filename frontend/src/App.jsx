@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import Chatbot from '@/components/ui/Chatbot';
-import SidePanel from '@/components/ui/SidePanel';
-import api from '@/api';
+import Chatbot from '@/components/Chatbot';
+import SidePanel from '@/components/SidePanel';
+import api from '@/assets/api';
 import "./App.css";
 
 export default function App() {
