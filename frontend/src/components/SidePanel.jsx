@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, MessageSquare, Trash2, FileText, ExternalLink, Power, Sun, Moon, Pencil } from "lucide-react";
 import AboutModal from "./AboutModal";
-import api from "@/api";
+import api from "@/assets/api";
 import "./SidePanel.css";
 
 export default function SidePanel({ conversations, activeConversationId, setActiveConversationId, sessionId, setConversations, onNewConversation }) {

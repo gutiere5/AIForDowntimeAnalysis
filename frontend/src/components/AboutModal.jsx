@@ -1,9 +1,7 @@
-import { useVersionInfo } from '../../hooks/useVersionInfo';
 import { X } from 'lucide-react';
 import './AboutModal.css';
 
 export default function AboutModal({ isOpen, onClose }) {
-    const { frontend, backend } = useVersionInfo();
 
     const formatDate = (dateString) => {
         if (!dateString || dateString.includes('...')) return dateString;
