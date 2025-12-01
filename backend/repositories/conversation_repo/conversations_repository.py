@@ -43,10 +43,10 @@ def add_message(conversation_id: str, session_id: str, role: str, content: str):
         raise
 
 
-def create_conversation(session_id: str, title: str = "New Conversation") -> dict:
+def create_conversation(session_id: str, title: str) -> dict:
     """Creates a new conversation entry and returns it."""
     conversation_id = str(uuid.uuid4())
-    logger.info(f"Creating new conversation for session {session_id} with title '{title}'.")
+    logger.info(f"Creating new conversation for session {session_id} with conversation ID '{conversation_id}' and title '{title}'.")
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
