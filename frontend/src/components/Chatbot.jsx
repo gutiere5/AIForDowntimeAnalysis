@@ -111,14 +111,12 @@ export default function Chatbot({ sessionId, activeConversationId, onNewConversa
       <div className="chat-content-inner">
         {!hasMessages ? (
           <div className="welcome-message-container">
-            {/* Title Group - Only show when no messages */}
+            {/* Title Group */}
             <div className="title-group" data-name="Title group">
               <div className="title" data-name="Title">
                 <p className="title-text">Welcome to ChatBot</p>
               </div>
             </div>
-
-            {/* Chat Input - Centered when no messages */}
             <div className="input-wrapper-centered">
               <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
             </div>

@@ -1,5 +1,6 @@
 import { User, Bot, AlertCircle } from "lucide-react";
 import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import "./Message.css";
 
 export default function Message({ role, content, loading, error }) {
@@ -31,7 +32,39 @@ export default function Message({ role, content, loading, error }) {
                             </div>
                         ) : (
                             <div className="message-text">
-                                <Markdown>{content}</Markdown>
+                                <Markdown
+                                    remarkPlugins={[remarkGfm]}
+                                    components={{
+                                        h1: ({node, ...props}) => <h1 className="markdown-h1" {...props} />,
+                                        h2: ({node, ...props}) => <h2 className="markdown-h2" {...props} />,
+                                        h3: ({node, ...props}) => <h3 className="markdown-h3" {...props} />,
+                                        h4: ({node, ...props}) => <h4 className="markdown-h4" {...props} />,
+                                        h5: ({node, ...props}) => <h5 className="markdown-h5" {...props} />,
+                                        h6: ({node, ...props}) => <h6 className="markdown-h6" {...props} />,
+                                        ul: ({node, ...props}) => <ul className="markdown-ul" {...props} />,
+                                        ol: ({node, ...props}) => <ol className="markdown-ol" {...props} />,
+                                        li: ({node, ...props}) => <li className="markdown-li" {...props} />,
+                                        p: ({node, ...props}) => <p className="markdown-p" {...props} />,
+                                        blockquote: ({node, ...props}) => <blockquote className="markdown-blockquote" {...props} />,
+                                        code: ({node, inline, ...props}) =>
+                                            inline ?
+                                            <code className="markdown-code-inline" {...props} /> :
+                                            <code className="markdown-code-block" {...props} />,
+                                        pre: ({node, ...props}) => <pre className="markdown-pre" {...props} />,
+                                        a: ({node, ...props}) => <a className="markdown-link" target="_blank" rel="noopener noreferrer" {...props} />,
+                                        table: ({node, ...props}) => <table className="markdown-table" {...props} />,
+                                        thead: ({node, ...props}) => <thead className="markdown-thead" {...props} />,
+                                        tbody: ({node, ...props}) => <tbody className="markdown-tbody" {...props} />,
+                                        tr: ({node, ...props}) => <tr className="markdown-tr" {...props} />,
+                                        th: ({node, ...props}) => <th className="markdown-th" {...props} />,
+                                        td: ({node, ...props}) => <td className="markdown-td" {...props} />,
+                                        hr: ({node, ...props}) => <hr className="markdown-hr" {...props} />,
+                                        strong: ({node, ...props}) => <strong className="markdown-strong" {...props} />,
+                                        em: ({node, ...props}) => <em className="markdown-em" {...props} />,
+                                    }}
+                                >
+                                    {content}
+                                </Markdown>
                             </div>
                         )}
 
