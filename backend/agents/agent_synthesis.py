@@ -1,5 +1,5 @@
 from backend.agents.llm_models.huggingface_inference_client import HuggingFaceInferenceService
-from backend.repositories.conversation_repo.conversations_repository import add_message
+from backend.repositories.sql_databases.conversations_repo import add_message
 from backend.agents.utils.synthesizer_prompt import SYNTHESIZER_PROMPT_TEMPLATE
 from backend.agents.utils.schemas import RequestContext
 import logging
@@ -24,7 +24,7 @@ class AgentSynthesis:
             {"role": "user", "content": synthesis_prompt}
         ]
 
-        self.logger.info(f"AgentSynthesizer: Synthesis messages for LLM: {messages}")
+        self.logger.info(f"AgentSynthesizer: Synthesis messages for LLM:")
         accumulated_response = ""
         try:
             response = self.llm_service.create_completion(

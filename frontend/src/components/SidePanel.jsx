@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Plus, MessageSquare, Trash2, FileText, ExternalLink, Power, Sun, Moon, Pencil } from "lucide-react";
+import { Plus, MessageSquare, Trash2, FileText, ExternalLink, Power, Sun, Moon, Pencil, BookOpen } from "lucide-react";
 import AboutModal from "./AboutModal";
+import KnownIssuesModal from "./KnownIssuesModal"
 import api from "@/assets/api";
 import "./SidePanel.css";
 
 export default function SidePanel({ conversations, activeConversationId, setActiveConversationId, sessionId, setConversations, onNewConversation }) {
     const [theme, setTheme] = useState("dark");
     const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+    const [isKnownIssuesModalOpen, setIsKnownIssuesModalOpen] = useState(false);
     const [editingConversationId, setEditingConversationId] = useState(null);
     const [editingTitle, setEditingTitle] = useState("");
 
@@ -164,6 +166,14 @@ export default function SidePanel({ conversations, activeConversationId, setActi
                     </button>
 
                     <button
+                        onClick={() => setIsKnownIssuesModalOpen(true)}
+                        className="bottom-button"
+                    >
+                        <BookOpen className="bottom-icon" />
+                        <span>Manage Known Issues</span>
+                    </button>
+
+                    <button
                         onClick={() => setIsAboutModalOpen(true)}
                         className="bottom-button"
                     >
@@ -178,6 +188,7 @@ export default function SidePanel({ conversations, activeConversationId, setActi
                 </div>
             </div>
             <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
+            <KnownIssuesModal isOpen={isKnownIssuesModalOpen} onClose={() => setIsKnownIssuesModalOpen(false)} />
         </>
     );
 }

@@ -17,13 +17,11 @@ def get_db_connection():
     return conn
 
 def initialize_database():
-    """Initializes the database by creating tables and indexes if they don't exist."""
     logger.info("Attempting to initialize the database...")
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Create the messages table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,13 +34,11 @@ def initialize_database():
         """)
         logger.info("Successfully verified 'messages' table exists.")
 
-        # Create a composite index for efficient message retrieval
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_conversation_timestamp ON messages (conversation_id, timestamp)
         """)
         logger.info("Successfully verified 'idx_conversation_timestamp' index exists.")
 
-        # Create the conversations table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS conversations (
                 id TEXT PRIMARY KEY,
@@ -53,11 +49,22 @@ def initialize_database():
         """)
         logger.info("Successfully verified 'conversations' table exists.")
 
-        # Create an index for retrieving conversations by session
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_session_id ON conversations (session_id)
         """)
         logger.info("Successfully verified 'idx_session_id' index exists.")
+
+        cursor.execute("""
+            Create Table IF NOT EXISTS known_issues (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            solution TEXT NOT NULL,
+            author TEXT NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        logger.info("Successfully verified 'known_issues' table exists.")
 
         conn.commit()
         conn.close()
