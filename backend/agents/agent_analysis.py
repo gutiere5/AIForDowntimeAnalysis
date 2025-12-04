@@ -157,28 +157,51 @@ class AgentAnalysis:
         else:
             # This will handle the queries like "Show me all events"
             self.logger.info("Analysis: Formatting 'passthrough' data for synthesizer...")
-            ids = data['ids']
-            documents = data['documents']
-            metadatas = data['metadatas']
+            ids = data.get('ids', [])
+            documents = data.get('documents', [])
+            metadatas = data.get('metadatas', [])
 
             if ids and isinstance(ids[0], list):
-                ids = ids[0]
-                documents = documents[0]
-                metadatas = metadatas[0]
+                ids = ids[0] if ids[0] else []
+                documents = documents[0] if documents and documents[0] else []
+                metadatas = metadatas[0] if metadatas and metadatas[0] else []
+
+            if not ids:
+                return {}
+
+            is_known_issue = metadatas and 'solution' in metadatas[0]
 
             incidents = []
             entry_count = len(ids)
 
             for i in range(entry_count):
-                incidents.append({
-                    "minutes": float(metadatas[i]['Downtime Minutes']),
-                    "note": documents[i] if documents[i] else "No notes provided",
-                    "line": metadatas[i]['Line'],
-                    "timestamp": metadatas[i]['Timestamp']
-                })
+                if is_known_issue:
+                    incident = {
+                        "title": metadatas[i].get('title'),
+                        "description": metadatas[i].get('description'),
+                        "solution": metadatas[i].get('solution'),
+                        "author": metadatas[i].get('author')
+                    }
+                else:
+                    incident = {
+                        "minutes": float(metadatas[i].get('Downtime Minutes', 0)),
+                        "note": documents[i] if documents and i < len(documents) else "No notes provided",
+                        "line": metadatas[i].get('Line'),
+                        "timestamp": metadatas[i].get('Timestamp')
+                    }
+                incidents.append(incident)
 
-            top_incidents = sorted(incidents, key=lambda x: x['minutes'], reverse=True)[:10]
-            return {
+            if not is_known_issue:
+                top_incidents = sorted(incidents, key=lambda x: x['minutes'], reverse=True)[:10]
+            else:
+                top_incidents = incidents[:3]
+
+            result_data = {
                 "entry_count": entry_count,
                 "display_incidents": top_incidents
             }
+
+            if is_known_issue:
+                return {"known_issue_results": result_data}
+            else:
+                return {"downtime_log_results": result_data}
