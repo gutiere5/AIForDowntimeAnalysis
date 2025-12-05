@@ -1,24 +1,24 @@
 import { useState } from "react";
 import { Plus, MessageSquare, Trash2, FileText, ExternalLink, Power, Sun, Moon, Pencil, BookOpen } from "lucide-react";
-import AboutModal from "./AboutModal";
+// import AboutModal from "./AboutModal";
 import KnownIssuesModal from "./KnownIssuesModal"
 import api from "@/assets/api";
 import "./SidePanel.css";
 
 export default function SidePanel({ conversations, activeConversationId, setActiveConversationId, sessionId, setConversations, onNewConversation }) {
     const [theme, setTheme] = useState("dark");
-    const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+    // const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
     const [isKnownIssuesModalOpen, setIsKnownIssuesModalOpen] = useState(false);
     const [editingConversationId, setEditingConversationId] = useState(null);
     const [editingTitle, setEditingTitle] = useState("");
 
-    const handleClearAll = () => {
-        // This should ideally trigger a backend call to delete all conversations
-        // and then update the state in the parent component.
-        // For now, we'll just clear the frontend state via the passed-in setter.
-        // setConversations([]);
-        console.log("Clearing all conversations is not implemented yet.");
-    };
+    // const handleClearAll = () => {
+    //     // This should ideally trigger a backend call to delete all conversations
+    //     // and then update the state in the parent component.
+    //     // For now, we'll just clear the frontend state via the passed-in setter.
+    //     // setConversations([]);
+    //     console.log("Clearing all conversations is not implemented yet.");
+    // };
 
     const handleDelete = async (conversationId) => {
         try {
@@ -152,6 +152,7 @@ export default function SidePanel({ conversations, activeConversationId, setActi
 
                 {/* Bottom Section */}
                 <div className="sidebar-bottom">
+                    {/*
                     <button
                         onClick={handleClearAll}
                         className="bottom-button"
@@ -159,11 +160,14 @@ export default function SidePanel({ conversations, activeConversationId, setActi
                         <Trash2 className="bottom-icon" />
                         <span>Clear All Conversations</span>
                     </button>
+                    */}
 
+                    {/*
                     <button className="bottom-button">
                         <FileText className="bottom-icon" />
                         <span>Report An Issue</span>
                     </button>
+                    */}
 
                     <button
                         onClick={() => setIsKnownIssuesModalOpen(true)}
@@ -173,6 +177,7 @@ export default function SidePanel({ conversations, activeConversationId, setActi
                         <span>Manage Known Issues</span>
                     </button>
 
+                    {/*
                     <button
                         onClick={() => setIsAboutModalOpen(true)}
                         className="bottom-button"
@@ -180,6 +185,7 @@ export default function SidePanel({ conversations, activeConversationId, setActi
                         <ExternalLink className="bottom-icon" />
                         <span>Updates</span>
                     </button>
+                    */}
 
                     <button className="bottom-button logout">
                         <Power className="bottom-icon" />
@@ -187,7 +193,7 @@ export default function SidePanel({ conversations, activeConversationId, setActi
                     </button>
                 </div>
             </div>
-            <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
+            {/* <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} /> */}
             <KnownIssuesModal isOpen={isKnownIssuesModalOpen} onClose={() => setIsKnownIssuesModalOpen(false)} />
         </>
     );

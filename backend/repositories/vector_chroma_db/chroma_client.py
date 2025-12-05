@@ -1,10 +1,10 @@
 import chromadb
 import uuid
-from typing import List, Dict, Optional, Union
 import logging
+from typing import List, Dict, Optional, Union
+import pandas as pd
 from chromadb.utils.embedding_functions.sentence_transformer_embedding_function import \
     SentenceTransformerEmbeddingFunction
-
 
 class ChromaClient:
     def __init__(self, collection_name, path: str = "./chroma_db"):
@@ -64,45 +64,63 @@ class ChromaClient:
             self.logger.info(f"Successfully added {len(documents)} embeddings to collection '{self.collection.name}'.")
         except Exception as e:
             self.logger.error(f"Error adding embeddings to ChromaDB: {e}")
+            raise e
 
     def query_items(
             self,
             query_texts: Optional[List[str]] = None,
             where: Optional[Dict[str, Union[str, int, float]]] = None,
             n_results: int = 5
-    ):
+    ) -> pd.DataFrame:
         self.logger.info(f"Querying ChromaDB for {query_texts} using {n_results} results in {self.collection.name} collection.")
         try:
-            collection_results = self.collection.query(
+            query_results = self.collection.query(
                 query_texts=query_texts,
                 n_results=n_results,
                 where=where,
-                include=['documents', 'metadatas']
+                include=['documents', 'metadatas','embeddings']
             )
-            if collection_results and collection_results.get('documents'):
-                self.logger.info(f"Successfully retrieved {len(collection_results['documents'])} documents from ChromaDB.")
-                if len(collection_results['documents']) > 0 :
-                    self.logger.info(f"Showing one result: Document: {collection_results['documents'][0]}, Metadata: {collection_results['metadatas'][0]}")
+
+            if query_results:
+                meta_df = pd.json_normalize(query_results['metadatas'][0])
+                query_results_df = pd.DataFrame({
+                        'ids': query_results['ids'][0],
+                        'documents': query_results['documents'][0],
+                        'embeddings': query_results['embeddings'][0],
+                })
+
+                final_df = pd.concat([query_results_df, meta_df], axis=1)
+                return final_df
             else:
-                self.logger.info("No documents found.")
-            return collection_results
+                return pd.DataFrame()
         except Exception as e:
-            self.logger.info(f"Error querying ChromaDB: {e}")
-            return {"error": str(e)}
+            self.logger.error(f"Error querying ChromaDB: {e}", exc_info=True)
+            raise Exception(f"Failed to query items from ChromaDB: {e}")
 
     def get_items(
             self,
             where: Optional[Dict[str, Union[str, int, float]]] = None,
-    ):
+    ) -> pd.DataFrame:
         try:
-            collection_results = self.collection.get(
+            get_results = self.collection.get(
                 where=where,
-                include=['documents', 'metadatas', 'ids']
+                include=['documents', 'metadatas', 'embeddings']
             )
-            return collection_results
+            if get_results:
+                self.logger.info(f"Found {len(get_results['ids'])} documents from ChromaDB.")
+                meta_df = pd.json_normalize(get_results['metadatas'])
+                get_results_df = pd.DataFrame({
+                        'ids': get_results['ids'],
+                        'documents': get_results["documents"],
+                        'embeddings': get_results["embeddings"],
+                    })
+                final_df = pd.concat([get_results_df, meta_df], axis=1)
+                return final_df
+            else:
+                return pd.DataFrame()
         except Exception as e:
-            self.logger.info(f"Error retrieving logs from ChromaDB: {e}")
-            return {"error": str(e)}
+            self.logger.error(f"Error retrieving logs from ChromaDB: {e}", exc_info=True)
+            raise Exception(f"Failed to get items from ChromaDB: {e}")
 
     def upsert_single_item(self, id: str, document: str, metadata: Optional[Dict] = None) -> None:
         try:

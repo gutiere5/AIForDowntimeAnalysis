@@ -11,18 +11,18 @@ class AgentSynthesis:
         self.logger = logging.getLogger(__name__)
         self.llm_service = HuggingFaceInferenceService()
 
-    def stream_final_response(self, query: str, data: dict, context: RequestContext):
+    def stream_final_response(self, query: str, data: dict, context: RequestContext, conversation_history: list = None):
         system_prompt = SYNTHESIZER_PROMPT_TEMPLATE
-
         synthesis_prompt = f"""
                 A user asked: '{query}'
                 The analysis found: {json.dumps(data)}
                 """
 
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": synthesis_prompt}
-        ]
+        messages = [{"role": "system", "content": system_prompt}]
+        if conversation_history:
+            for message in conversation_history:
+                messages.append({"role": message["role"], "content": message["content"]})
+        messages.append({"role": "user", "content": synthesis_prompt})
 
         self.logger.info(f"AgentSynthesizer: Synthesis messages for LLM:")
         accumulated_response = ""

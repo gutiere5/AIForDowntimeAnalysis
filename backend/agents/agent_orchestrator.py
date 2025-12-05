@@ -12,7 +12,7 @@ class AgentOrchestrator:
         self.llm_service = HuggingFaceInferenceService()
         self.logger = logging.getLogger(__name__)
 
-    def get_plan_from_orchestrator(self, user_query: str) -> Dict[str, Any]:
+    def get_plan_from_orchestrator(self, user_query: str, conversation_history: list = None) -> Dict[str, Any]:
         self.logger.info(f"Getting plan for user query: {user_query}.")
         now = datetime.datetime.now()
 
@@ -22,6 +22,11 @@ class AgentOrchestrator:
         try:
             messages = [{"role": "system", "content": system_instructions}]
             messages.extend(EXAMPLES)
+
+            if conversation_history:
+                for message in conversation_history:
+                    messages.append({"role": message["role"], "content": message["content"]})
+
             messages.append({"role": "user", "content": user_query})
 
             response = self.llm_service.create_completion(
@@ -35,23 +40,28 @@ class AgentOrchestrator:
             )
 
             json_str = response.choices[0].message.content.strip()
-            json_str = response.choices[0].message.content.strip()
 
             if "```" in json_str:
                 json_str = json_str.replace("```json", "").replace("```", "")
 
             json_str = re.sub(r'\s+', ' ', json_str).strip()
             plan = json.loads(json_str)
-            json_str = re.sub(r'\s+', ' ', json_str).strip()
-            plan = json.loads(json_str)
             self.logger.info(f"Orchestrator Generated Plan: {plan}")
-
             return plan
         except Exception as e:
-            self.logger.error(f"Orchestrator Error: Failed to generate plan.")
-            self.logger.error(f"Orchestrator Error: {e}")
+            self.logger.error(f"Orchestrator Error: Failed to generate plan: {e}", exc_info=True)
             self.logger.error(f"Raw Response: {response}")
-            return {"error": "Failed to generate a valid plan."}
+            fallback_message = "I encountered an error while trying to create a plan to answer your query. I will do my best to answer directly."
+            return {
+                "steps": [
+                    {
+                        "agent": "synthesis",
+                        "task": {
+                            "message": fallback_message
+                        }
+                    }
+                ]
+            }
 
 
 if __name__ == "__main__":

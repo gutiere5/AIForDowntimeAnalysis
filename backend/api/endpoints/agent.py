@@ -12,7 +12,7 @@ router = APIRouter()
 @router.get("/agent/query")
 async def agent_query(query: str, session_id: str, conversation_id: str = None):
     logger.info(f"Received user request: {query} for session_id: {session_id} and conversation_id: {conversation_id}")
-    main_agent = MainAgent(name="MainAgent")
+    main_agent = MainAgent()
 
     if not session_id:
         raise HTTPException(status_code=400, detail="session_id is required")
