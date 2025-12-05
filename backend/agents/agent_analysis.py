@@ -1,5 +1,6 @@
 import logging
 import numpy as np
+import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
@@ -8,197 +9,154 @@ class AgentAnalysis:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
-    def execute_analysis_task(self, task, data):
+    def execute_analysis_task(self, task, data: pd.DataFrame) -> dict:
         analysis_type = task.get('type')
         self.logger.info(f"AgentAnalysis: Executing analysis task of type '{analysis_type}'")
 
         if analysis_type == 'calculate_total_downtime':
-            total_downtime = 0
-            incidents = []
+            if data.empty:
+                return {
+                    "total_downtime_minutes": 0,
+                    "entry_count": 0,
+                    "top_downtimes": []
+                }
+            data['Downtime Minutes'] = pd.to_numeric(data['Downtime Minutes'], errors='coerce').fillna(0)
+            top_incidents_df = data.nlargest(5, 'Downtime Minutes')
 
-            for i in range(len(data['ids'])):
-                minutes = float(data['metadatas'][i]['Downtime Minutes'])
-                note = data['documents'][i] if data['documents'][i] else "No notes provided"
-                line = data['metadatas'][i]['Line']
-                timestamp = data['metadatas'][i]['Timestamp']
-
-                total_downtime += minutes
-                incidents.append({"minutes": minutes, "note": note, "line": line, "timestamp": timestamp})
-
-            top_incidents = sorted(incidents, key=lambda x: x['minutes'], reverse=True)[:5]
+            total_downtime = data['Downtime Minutes'].sum()
+            entry_count = len(data)
+            top_incidents = top_incidents_df.rename(columns={
+                'Downtime Minutes': 'minutes',
+                'documents': 'note',
+                'Line': 'line',
+                'Timestamp': 'timestamp'
+            })
+            top_incidents['note'] = top_incidents['note'].apply(lambda x: x if x else "No notes provided")
+            top_incidents['minutes'] = top_incidents['minutes'].astype(int)
+            top_incidents = top_incidents[['minutes', 'note', 'line', 'timestamp']].to_dict('records')
 
             return {
-                "total_downtime_minutes": total_downtime,
-                "entry_count": len(data['ids']),
+                "total_downtime_minutes": int(total_downtime),
+                "entry_count": int(entry_count),
                 "top_downtimes": top_incidents
             }
 
         elif analysis_type == 'aggregate_by_line':
-            line_downtime = {}
+            if data.empty:
+                return {"top_lines_by_downtime": []}
 
-            for i in range(len(data['ids'])):
-                line = data['metadatas'][i]['Line']
-                minutes = float(data['metadatas'][i]['Downtime Minutes'])
+            data['Downtime Minutes'] = pd.to_numeric(data['Downtime Minutes'], errors='coerce').fillna(0)
+            line_downtime = data.groupby('Line')['Downtime Minutes'].sum().sort_values(ascending=False).head(5)
+            top_lines_formatted = line_downtime.reset_index().rename(
+                columns={'Line': 'line', 'Downtime Minutes': 'total_downtime_minutes'}
+            ).to_dict('records')
 
-                if line not in line_downtime:
-                    line_downtime[line] = 0.0
-
-                line_downtime[line] += minutes
-
-            sorted_lines = sorted(line_downtime.items(), key=lambda item: item[1], reverse=True)
-
-            top_lines_formatted = []
-            for line, total_minutes in sorted_lines[:5]:
-                top_lines_formatted.append({
-                    "line": line,
-                    "total_downtime_minutes": total_minutes
-                })
             return {"top_lines_by_downtime": top_lines_formatted}
 
         elif analysis_type == 'cluster_and_aggregate':
             self.logger.info("🔬 [Analysis] Clustering notes to find top causes...")
 
-            logs_with_notes = []
-            for i in range(len(data['ids'])):
-                if data['documents'][i]:
-                    logs_with_notes.append({
-                        "embedding": data['embeddings'][i],
-                        "metadata": data['metadatas'][i],
-                        "document": data['documents'][i]
-                    })
+            if 'embeddings' not in data.columns:
+                return {"error": "Embeddings not found in data, cannot perform clustering."}
 
-            if not logs_with_notes:
-                return {"error": "No notes were found to analyze."}
+            logs_with_notes = data[data['documents'].notna() & (data['documents'] != '') & data['embeddings'].notna()].copy()
+            if logs_with_notes.empty:
+                return {"error": "No notes with embeddings were found to analyze."}
 
-            embeddings = np.array([log['embedding'] for log in logs_with_notes])
-
-            # Determine the number of components for PCA dynamically
+            embeddings = np.array(logs_with_notes['embeddings'].tolist())
             n_samples, n_features = embeddings.shape
-            n_components = min(n_samples, n_features, 20)
 
-            # Ensure n_components is at least 1
-            if n_components == 0:
-                return {"error": "Not enough data to perform analysis."}
+            n_components = min(n_samples, n_features, 20)
+            if n_components < 1:
+                return {"error": "Not enough data to perform PCA."}
 
             pca = PCA(n_components=n_components, random_state=42)
             reduced_embeddings = pca.fit_transform(embeddings)
 
             n_clusters = 5
-            if len(logs_with_notes) < n_clusters:
-                n_clusters = len(logs_with_notes)
-
-            # Ensure n_clusters is not greater than n_samples
-            if n_clusters > n_samples:
+            if n_samples < n_clusters:
                 n_clusters = n_samples
-            
-            # Ensure n_clusters is at least 1
-            if n_clusters == 0:
+
+            if n_clusters < 1:
                 return {"error": "Not enough data to perform clustering."}
 
-
             kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
-            clusters = kmeans.fit_predict(reduced_embeddings)
+            logs_with_notes['cluster'] = kmeans.fit_predict(reduced_embeddings)
 
-            cluster_analysis = {}
-            for i, log in enumerate(logs_with_notes):
-                cluster_id = clusters[i]
-                if cluster_id not in cluster_analysis:
-                    cluster_analysis[cluster_id] = {
-                        "total_downtime": 0,
-                        "incident_count": 0,
-                        "notes": []
-                    }
+            logs_with_notes['Downtime Minutes'] = pd.to_numeric(logs_with_notes['Downtime Minutes'], errors='coerce').fillna(0)
 
-                cluster_analysis[cluster_id]["total_downtime"] += float(log['metadata']['Downtime Minutes'])
-                cluster_analysis[cluster_id]["incident_count"] += 1
-                cluster_analysis[cluster_id]["notes"].append(log['document'])
+            def get_most_frequent(series):
+                return series.mode()[0] if not series.empty else "N/A"
 
-            ranked_clusters = []
-            for cluster_id, analysis in cluster_analysis.items():
-                label = max(set(analysis['notes']), key=analysis['notes'].count)
+            cluster_analysis = logs_with_notes.groupby('cluster').agg(
+                cluster_label=('documents', get_most_frequent),
+                total_downtime_minutes=('Downtime Minutes', 'sum'),
+                incident_count=('documents', 'size')
+            )
 
-                ranked_clusters.append({
-                    "cluster_label": label,
-                    "total_downtime_minutes": analysis['total_downtime'],
-                    "incident_count": analysis['incident_count']
-                })
+            ranked_clusters_df = cluster_analysis.sort_values('total_downtime_minutes', ascending=False)
 
-            ranked_clusters = sorted(ranked_clusters, key=lambda x: x['total_downtime_minutes'], reverse=True)
-            return {"top_causes": ranked_clusters}
+            return {"top_causes": ranked_clusters_df.reset_index(drop=True).to_dict('records')}
 
         elif analysis_type == 'find_most_frequent_causes':
-            note_counts = {}
-            total_logs_with_notes = 0
+            if data.empty:
+                return {"most_frequent_downtimes": []}
 
-            for i in range(len(data['ids'])):
-                note = data['documents'][i]
-                if note:
-                    total_logs_with_notes += 1
-                    note_counts[note] = note_counts.get(note, 0) + 1
+            filtered_data = data[data['documents'].notna() & (data['documents'] != '')].copy()
 
-            if not note_counts:
+            if filtered_data.empty:
                 return {"error": "No notes were found to analyze."}
 
-            sorted_notes = sorted(note_counts.items(), key=lambda item: item[1], reverse=True)
+            total_logs_with_notes = len(filtered_data)
+            note_counts = filtered_data['documents'].value_counts().head(5)
 
-            top_5_notes = []
-            for note, count in sorted_notes[:5]:
-                top_5_notes.append({
+            most_frequent_downtimes = []
+            for note, count in note_counts.items():
+                most_frequent_downtimes.append({
                     "note": note,
-                    "incident_count": count,
+                    "incident_count": int(count),
                     "percentage": round((count / total_logs_with_notes) * 100, 1)
                 })
 
             return {
                 "total_logs_analyzed": total_logs_with_notes,
-                "most_frequent_downtimes": top_5_notes
+                "most_frequent_downtimes": most_frequent_downtimes
             }
 
         else:
-            # This will handle the queries like "Show me all events"
             self.logger.info("Analysis: Formatting 'passthrough' data for synthesizer...")
-            ids = data.get('ids', [])
-            documents = data.get('documents', [])
-            metadatas = data.get('metadatas', [])
 
-            if ids and isinstance(ids[0], list):
-                ids = ids[0] if ids[0] else []
-                documents = documents[0] if documents and documents[0] else []
-                metadatas = metadatas[0] if metadatas and metadatas[0] else []
-
-            if not ids:
+            if data.empty:
                 return {}
 
-            is_known_issue = metadatas and 'solution' in metadatas[0]
+            is_known_issue = 'solution' in data.columns
 
-            incidents = []
-            entry_count = len(ids)
-
-            for i in range(entry_count):
-                if is_known_issue:
-                    incident = {
-                        "title": metadatas[i].get('title'),
-                        "description": metadatas[i].get('description'),
-                        "solution": metadatas[i].get('solution'),
-                        "author": metadatas[i].get('author')
-                    }
-                else:
-                    incident = {
-                        "minutes": float(metadatas[i].get('Downtime Minutes', 0)),
-                        "note": documents[i] if documents and i < len(documents) else "No notes provided",
-                        "line": metadatas[i].get('Line'),
-                        "timestamp": metadatas[i].get('Timestamp')
-                    }
-                incidents.append(incident)
-
-            if not is_known_issue:
-                top_incidents = sorted(incidents, key=lambda x: x['minutes'], reverse=True)[:10]
+            if is_known_issue:
+                # For known issues, select relevant columns and format
+                incidents_df = data[['title', 'description', 'solution', 'author']].copy()
+                incidents = incidents_df.head(3).to_dict('records') # Take top 3 as per original
             else:
-                top_incidents = incidents[:3]
+                # For downtime logs, select and rename columns
+                incidents_df = data.copy()
+                incidents_df['Downtime Minutes'] = pd.to_numeric(incidents_df['Downtime Minutes'], errors='coerce').fillna(0)
+                incidents_df['documents'] = incidents_df['documents'].fillna("No notes provided") # Fill empty notes
+
+                # Rename columns first to match output keys
+                incidents_df = incidents_df.rename(columns={
+                    'Downtime Minutes': 'minutes',
+                    'documents': 'note',
+                    'Line': 'line',
+                    'Timestamp': 'timestamp'
+                })
+
+                # Sort by minutes and take top 10, then select specific columns and convert to dict
+                incidents = incidents_df.sort_values(by='minutes', ascending=False).head(10)[
+                    ['minutes', 'note', 'line', 'timestamp']
+                ].to_dict('records')
 
             result_data = {
-                "entry_count": entry_count,
-                "display_incidents": top_incidents
+                "entry_count": len(data),
+                "display_incidents": incidents
             }
 
             if is_known_issue:

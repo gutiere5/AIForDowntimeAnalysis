@@ -8,7 +8,7 @@ def run_and_seed_db():
     columns_to_use = ['Timestamp', 'Downtime Minutes', 'Notes', 'Line']
     print("Reading CSV file...")
     try:
-        df = pd.read_csv('backend/data/downtime_logs.csv', usecols=columns_to_use)
+        df = pd.read_csv('data/downtime_logs.csv', usecols=columns_to_use)
     except FileNotFoundError:
         print("CSV file not found. Please ensure 'backend/data/downtime_logs.csv' exists.")
         return
@@ -20,7 +20,7 @@ def run_and_seed_db():
     cleaned_data = clean_data(df)
 
     print("Seeding database...")
-    chroma_client = ChromaClient(collection_name="downtime_logs")
+    chroma_client = ChromaClient(collection_name="downtime_logs", path="../chroma_db")
     cleaned_data['Timestamp_unix'] = cleaned_data['Timestamp'].apply(
         lambda x: int(x.timestamp() if isinstance(x, pd.Timestamp) else int(x)))
     cleaned_data['Timestamp'] = cleaned_data['Timestamp'].astype(str)

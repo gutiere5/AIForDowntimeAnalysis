@@ -23,22 +23,22 @@ class AgentRetrieval:
         elif task_type == 'known_issue_query':
             if not query_text:
                 self.logger.error("AgentRetrieval: 'query_text' is required for 'known_issue_query'.")
-                return {"error": "'query_text' is required for 'known_issue_query'"}
+                raise ValueError("'query_text' is required for 'known_issue_query'")
             return self.known_issues_client.query_items(query_texts=[query_text], n_results=3, where=chroma_filters)
 
         elif task_type == 'semantic_query':
             if not query_text:
                 self.logger.error("AgentRetrieval: 'query_text' is required for 'semantic_query'.")
-                return {"error": "'query_text' is required for 'semantic_query'"}
+                raise ValueError("'query_text' is required for 'semantic_query'")
             return self.downtime_logs_client.query_items(query_texts=[query_text], n_results=10,
                                                           where=chroma_filters)
 
         elif task_type == 'hybrid_query':
             if not query_text:
                 self.logger.error("AgentRetrieval: 'query_text' is required for 'hybrid_query'.")
-                return {"error": "'query_text' is required for 'hybrid_query'"}
-            return self.downtime_logs_client.query_items(query_texts=[query_text], n_results=10,
+                raise ValueError("'query_text' is required for 'hybrid_query'")
+            return self.downtime_logs_client.query_items(query_texts=[query_text], n_results=5,
                                                           where=chroma_filters)
         else:
             self.logger.warning(f"AgentRetrieval: Unknown task type '{task_type}'")
-            return {"error": f"Unknown task type: {task_type}"}
+            raise ValueError(f"Unknown task type: {task_type}")

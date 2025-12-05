@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, Literal
+from typing import List, Literal
 from pydantic import BaseModel, Field
 
 @dataclass
@@ -9,7 +9,7 @@ class RequestContext:
     This object is passed through the layers of the application.
     """
     session_id: str
-    conversation_id: Optional[str] = None
+    conversation_id: str
 
 class ChatMessage(BaseModel):
     """A single message in a conversation."""

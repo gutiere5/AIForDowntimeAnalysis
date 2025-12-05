@@ -22,7 +22,7 @@ def initialize_database():
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.executescript("""
             CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 conversation_id TEXT NOT NULL,
@@ -30,41 +30,25 @@ def initialize_database():
                 role TEXT NOT NULL,
                 content TEXT NOT NULL,
                 timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        logger.info("Successfully verified 'messages' table exists.")
-
-        cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_conversation_timestamp ON messages (conversation_id, timestamp)
-        """)
-        logger.info("Successfully verified 'idx_conversation_timestamp' index exists.")
-
-        cursor.execute("""
+            );
+            CREATE INDEX IF NOT EXISTS idx_conversation_timestamp ON messages (conversation_id, timestamp);
             CREATE TABLE IF NOT EXISTS conversations (
                 id TEXT PRIMARY KEY,
                 session_id TEXT NOT NULL,
                 title TEXT NOT NULL,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-            )
+            );
+            CREATE INDEX IF NOT EXISTS idx_session_id ON conversations (session_id);
+            CREATE TABLE IF NOT EXISTS known_issues (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                description TEXT NOT NULL,
+                solution TEXT NOT NULL,
+                author TEXT NOT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
         """)
-        logger.info("Successfully verified 'conversations' table exists.")
-
-        cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_session_id ON conversations (session_id)
-        """)
-        logger.info("Successfully verified 'idx_session_id' index exists.")
-
-        cursor.execute("""
-            Create Table IF NOT EXISTS known_issues (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            description TEXT NOT NULL,
-            solution TEXT NOT NULL,
-            author TEXT NOT NULL,
-            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        logger.info("Successfully verified 'known_issues' table exists.")
+        logger.info("Database schema initialized/verified successfully.")
 
         conn.commit()
         conn.close()
