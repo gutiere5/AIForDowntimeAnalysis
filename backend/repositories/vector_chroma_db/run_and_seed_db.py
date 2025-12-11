@@ -8,9 +8,10 @@ def run_and_seed_db():
     columns_to_use = ['Timestamp', 'Downtime Minutes', 'Notes', 'Line']
     print("Reading CSV file...")
     try:
-        df = pd.read_csv('data/downtime_logs.csv', usecols=columns_to_use)
+        csv_path = 'backend/data/downtime_logs.csv'
+        df = pd.read_csv(csv_path, usecols=columns_to_use)
     except FileNotFoundError:
-        print("CSV file not found. Please ensure 'backend/data/downtime_logs.csv' exists.")
+        print(f"CSV file not found at {csv_path}. Please ensure 'backend/data/downtime_logs.csv' exists.")
         return
     except Exception as e:
         print(f"An error occurred while reading the CSV file: {e}")

@@ -31,6 +31,15 @@ async function deleteConversation(conversationId, sessionId) {
     }
 }
 
+async function deleteAllConversations(sessionId) {
+    try {
+        const response = await axios.delete(`${BASE_URL}/conversations/${sessionId}`);
+        return response.data;
+    } catch (error) {
+        throw new Error(`HTTP error! status: ${error.response.status}`);
+    }
+}
+
 async function updateConversationTitle(conversationId, sessionId, newTitle) {
     try {
         const response = await axios.put(`${BASE_URL}/conversations`, null, {
@@ -106,5 +115,6 @@ export default {
     getKnownIssues,
     addKnownIssue,
     updateKnownIssue,
-    deleteKnownIssue
+    deleteKnownIssue,
+    deleteAllConversations
 };

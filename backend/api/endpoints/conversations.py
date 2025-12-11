@@ -29,6 +29,12 @@ async def delete_conversation(conversation_id: str, session_id: str):
     conversations_repo.delete_conversation(conversation_id, session_id)
     return {"message": "Conversation deleted successfully"}
 
+@router.delete("/conversations/{session_id}")
+async def delete_all_conversations(session_id: str):
+    logger.info(f"Deleting all conversations for session_id: {session_id}")
+    conversations_repo.delete_all_conversations(session_id)
+    return {"message": "All conversations deleted successfully"}
+
 @router.put("/conversations")
 async def update_conversation_title(session_id: str, conversation_id: str, title: str):
     logger.info(f"Updating conversation_id: {conversation_id} with title: {title}")

@@ -5,20 +5,20 @@ import KnownIssuesModal from "./KnownIssuesModal"
 import api from "@/assets/api";
 import "./SidePanel.css";
 
-export default function SidePanel({ conversations, activeConversationId, setActiveConversationId, sessionId, setConversations, onNewConversation }) {
-    const [theme, setTheme] = useState("dark");
+export default function SidePanel({ conversations, activeConversationId, setActiveConversationId, sessionId, setConversations, onNewConversation, theme, setTheme }) {
     // const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
     const [isKnownIssuesModalOpen, setIsKnownIssuesModalOpen] = useState(false);
     const [editingConversationId, setEditingConversationId] = useState(null);
     const [editingTitle, setEditingTitle] = useState("");
 
-    // const handleClearAll = () => {
-    //     // This should ideally trigger a backend call to delete all conversations
-    //     // and then update the state in the parent component.
-    //     // For now, we'll just clear the frontend state via the passed-in setter.
-    //     // setConversations([]);
-    //     console.log("Clearing all conversations is not implemented yet.");
-    // };
+    const handleClearAll = async () => {
+        try {
+            await api.deleteAllConversations(sessionId);
+            setConversations([]);
+        } catch (error) {
+            console.error("Failed to clear conversations:", error);
+        }
+    };
 
     const handleDelete = async (conversationId) => {
         try {
@@ -152,7 +152,6 @@ export default function SidePanel({ conversations, activeConversationId, setActi
 
                 {/* Bottom Section */}
                 <div className="sidebar-bottom">
-                    {/*
                     <button
                         onClick={handleClearAll}
                         className="bottom-button"
@@ -160,7 +159,6 @@ export default function SidePanel({ conversations, activeConversationId, setActi
                         <Trash2 className="bottom-icon" />
                         <span>Clear All Conversations</span>
                     </button>
-                    */}
 
                     {/*
                     <button className="bottom-button">

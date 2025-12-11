@@ -7,7 +7,7 @@ from chromadb.utils.embedding_functions.sentence_transformer_embedding_function 
     SentenceTransformerEmbeddingFunction
 
 class ChromaClient:
-    def __init__(self, collection_name, path: str = "./chroma_db"):
+    def __init__(self, collection_name, path: str = "../chroma_db"):
         self.logger = logging.getLogger(__name__)
         self.client = chromadb.PersistentClient(path=path)
         self.embedding_function = SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")

@@ -132,24 +132,20 @@ class AgentAnalysis:
             is_known_issue = 'solution' in data.columns
 
             if is_known_issue:
-                # For known issues, select relevant columns and format
                 incidents_df = data[['title', 'description', 'solution', 'author']].copy()
                 incidents = incidents_df.head(3).to_dict('records') # Take top 3 as per original
             else:
-                # For downtime logs, select and rename columns
                 incidents_df = data.copy()
                 incidents_df['Downtime Minutes'] = pd.to_numeric(incidents_df['Downtime Minutes'], errors='coerce').fillna(0)
                 incidents_df['documents'] = incidents_df['documents'].fillna("No notes provided") # Fill empty notes
 
-                # Rename columns first to match output keys
                 incidents_df = incidents_df.rename(columns={
                     'Downtime Minutes': 'minutes',
-                    'documents': 'note',
+                    'Notes': 'note',
                     'Line': 'line',
                     'Timestamp': 'timestamp'
                 })
 
-                # Sort by minutes and take top 10, then select specific columns and convert to dict
                 incidents = incidents_df.sort_values(by='minutes', ascending=False).head(10)[
                     ['minutes', 'note', 'line', 'timestamp']
                 ].to_dict('records')

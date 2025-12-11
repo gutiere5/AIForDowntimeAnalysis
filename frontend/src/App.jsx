@@ -8,6 +8,11 @@ export default function App() {
   const [conversations, setConversations] = useState([]);
   const [activeConversationId, setActiveConversationId] = useState(null);
   const [sessionId, setSessionId] = useState(null);
+  const [theme, setTheme] = useState("dark");
+
+  useEffect(() => {
+    document.body.setAttribute('data-theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     let session_id = localStorage.getItem('session_id');
@@ -42,6 +47,8 @@ export default function App() {
           sessionId={sessionId}
           setConversations={setConversations}
           onNewConversation={handleNewConversation}
+          theme={theme}
+          setTheme={setTheme}
         />
       </div>
       <div className='chatbot-wrapper'>
