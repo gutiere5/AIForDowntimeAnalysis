@@ -142,6 +142,33 @@ def delete_conversation(conversation_id: str, session_id: str):
         logger.error(f"Failed to delete conversation {conversation_id}: {e}")
         raise
 
+def delete_all_conversations(session_id: str):
+    logger.info(f"Deleting all conversations for session {session_id}")
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT id FROM conversations WHERE session_id = ?", (session_id,))
+        conversation_ids = [row[0] for row in cursor.fetchall()]
+
+        if not conversation_ids:
+            logger.info(f"No conversations found for session {session_id}.")
+            conn.close()
+            return
+
+        cursor.execute("DELETE FROM messages WHERE conversation_id IN ({})".format(
+            ', '.join('?' for _ in conversation_ids)),
+            conversation_ids
+        )
+
+        cursor.execute("DELETE FROM conversations WHERE session_id = ?", (session_id,))
+
+        conn.commit()
+        conn.close()
+        logger.info(f"Successfully deleted all conversations for session {session_id}.")
+    except Exception as e:
+        logger.error(f"Failed to delete all conversations for session {session_id}: {e}")
+        raise
 
 def update_conversation_title(conversation_id: str, session_id: str, new_title: str):
     logger.info(f"Updating title for conversation {conversation_id} to '{new_title}'")
@@ -167,3 +194,5 @@ def update_conversation_title(conversation_id: str, session_id: str, new_title: 
     except Exception as e:
         logger.error(f"Failed to update title for conversation {conversation_id}: {e}")
         raise
+
+

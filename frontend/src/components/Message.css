@@ -46,11 +46,11 @@
 }
 
 .avatar-user {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-hover) 100%);
 }
 
 .avatar-assistant {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-hover) 100%);
 }
 
 .avatar-icon {
@@ -79,24 +79,24 @@
 }
 
 .bubble-user {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-hover) 100%);
+    color: var(--primary-text);
     border-bottom-right-radius: 4px;
     margin-left: auto;
     max-width: 85%;
 }
 
 .bubble-assistant {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #f5f5f5;
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    color: var(--primary-text);
     border-bottom-left-radius: 4px;
     max-width: 100%;
 }
 
 .bubble-error {
-    border-color: rgba(239, 68, 68, 0.3);
-    background: rgba(239, 68, 68, 0.1);
+    border-color: var(--accent-red);
+    background: var(--accent-red);
 }
 
 /* Message Text Base */
@@ -141,22 +141,22 @@
 
 .markdown-h1 {
     font-size: 1.875em;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 2px solid var(--border-color);
     padding-bottom: 8px;
 }
 
 .bubble-user .markdown-h1 {
-    border-bottom-color: rgba(255, 255, 255, 0.3);
+    border-bottom-color: var(--border-color);
 }
 
 .markdown-h2 {
     font-size: 1.5em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 6px;
 }
 
 .bubble-user .markdown-h2 {
-    border-bottom-color: rgba(255, 255, 255, 0.3);
+    border-bottom-color: var(--border-color);
 }
 
 .markdown-h3 {
@@ -222,14 +222,14 @@
 .markdown-blockquote {
     margin: 12px 0;
     padding: 12px 16px;
-    border-left: 4px solid rgba(255, 255, 255, 0.2);
-    background: rgba(0, 0, 0, 0.2);
+    border-left: 4px solid var(--border-color);
+    background: var(--tertiary-bg);
     border-radius: 4px;
 }
 
 .bubble-user .markdown-blockquote {
-    border-left-color: rgba(255, 255, 255, 0.4);
-    background: rgba(255, 255, 255, 0.15);
+    border-left-color: var(--border-color);
+    background: var(--tertiary-bg);
 }
 
 .markdown-blockquote .markdown-p:last-child {
@@ -238,32 +238,32 @@
 
 /* Inline Code */
 .markdown-code-inline {
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--tertiary-bg);
     padding: 3px 7px;
     border-radius: 4px;
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Fira Mono', 'Roboto Mono', 'Courier New', monospace;
     font-size: 0.9em;
-    color: #fca5a5;
+    color: var(--accent-red);
 }
 
 .bubble-user .markdown-code-inline {
-    background: rgba(255, 255, 255, 0.25);
-    color: #ffffff;
+    background: var(--tertiary-bg);
+    color: var(--primary-text);
 }
 
 /* Code Blocks */
 .markdown-pre {
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--tertiary-bg);
     padding: 14px 16px;
     border-radius: 8px;
     overflow-x: auto;
     margin: 12px 0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
 }
 
 .bubble-user .markdown-pre {
-    background: rgba(0, 0, 0, 0.3);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--tertiary-bg);
+    border-color: var(--border-color);
 }
 
 .markdown-pre .markdown-code-block {
@@ -273,35 +273,35 @@
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Fira Mono', 'Roboto Mono', 'Courier New', monospace;
     font-size: 0.9em;
     line-height: 1.6;
-    color: #e5e5e5;
+    color: var(--primary-text);
     display: block;
 }
 
 .bubble-user .markdown-pre .markdown-code-block {
-    color: #ffffff;
+    color: var(--primary-text);
 }
 
 /* Links */
 .markdown-link {
-    color: #60a5fa;
+    color: var(--link-color);
     text-decoration: underline;
-    text-decoration-color: rgba(96, 165, 250, 0.4);
+    text-decoration-color: var(--link-color);
     text-underline-offset: 2px;
     transition: all 0.2s ease;
 }
 
 .markdown-link:hover {
-    color: #93c5fd;
-    text-decoration-color: rgba(147, 197, 253, 0.6);
+    color: var(--link-hover-color);
+    text-decoration-color: var(--link-hover-color);
 }
 
 .bubble-user .markdown-link {
-    color: #ffffff;
-    text-decoration-color: rgba(255, 255, 255, 0.5);
+    color: var(--primary-text);
+    text-decoration-color: var(--primary-text);
 }
 
 .bubble-user .markdown-link:hover {
-    text-decoration-color: rgba(255, 255, 255, 0.8);
+    text-decoration-color: var(--primary-text);
 }
 
 /* Tables */
@@ -315,18 +315,18 @@
 }
 
 .markdown-thead {
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--tertiary-bg);
 }
 
 .bubble-user .markdown-thead {
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--tertiary-bg);
 }
 
 .markdown-th,
 .markdown-td {
     padding: 10px 12px;
     text-align: left;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
 }
 
 .markdown-th {
@@ -335,26 +335,26 @@
 
 .bubble-user .markdown-th,
 .bubble-user .markdown-td {
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: var(--border-color);
 }
 
 .markdown-tr:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--tertiary-bg);
 }
 
 .bubble-user .markdown-tr:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--tertiary-bg);
 }
 
 /* Horizontal Rule */
 .markdown-hr {
     border: none;
-    border-top: 2px solid rgba(255, 255, 255, 0.15);
+    border-top: 2px solid var(--border-color);
     margin: 20px 0;
 }
 
 .bubble-user .markdown-hr {
-    border-top-color: rgba(255, 255, 255, 0.3);
+    border-top-color: var(--border-color);
 }
 
 /* Strong and Emphasis */
@@ -384,7 +384,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: #10b981;
+    background-color: var(--accent-green);
     animation: dotPulse 1.4s infinite ease-in-out both;
 }
 
@@ -418,10 +418,10 @@
     gap: 8px;
     margin-top: 8px;
     padding: 8px 12px;
-    background: rgba(239, 68, 68, 0.15);
+    background: var(--accent-red);
     border-radius: 8px;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #fca5a5;
+    border: 1px solid var(--accent-red-hover);
+    color: var(--primary-text);
     font-size: 14px;
 }
 
@@ -437,17 +437,17 @@
 }
 
 .markdown-pre::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--tertiary-bg);
     border-radius: 4px;
 }
 
 .markdown-pre::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--scrollbar-thumb);
     border-radius: 4px;
 }
 
 .markdown-pre::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--scrollbar-thumb);
 }
 
 /* Responsive */
