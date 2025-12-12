@@ -29,6 +29,7 @@ def initialize_database():
                 session_id TEXT NOT NULL,
                 role TEXT NOT NULL,
                 content TEXT NOT NULL,
+                rating TEXT,
                 timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
             CREATE INDEX IF NOT EXISTS idx_conversation_timestamp ON messages (conversation_id, timestamp);

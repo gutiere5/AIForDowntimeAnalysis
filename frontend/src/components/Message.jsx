@@ -1,11 +1,20 @@
-import { User, Bot, AlertCircle } from "lucide-react";
+import { User, Bot, AlertCircle, ThumbsUp, ThumbsDown, CheckCircle } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useState } from "react";
 import "./Message.css";
 
-export default function Message({ role, content, loading, error }) {
+export default function Message({ role, content, loading, error, onFeedback }) {
     const isUser = role === "user";
     const isAssistant = role === "assistant";
+    const [feedbackGiven, setFeedbackGiven] = useState(false);
+
+    const handleFeedbackClick = (rating) => {
+        if (!feedbackGiven && onFeedback) {
+            onFeedback(rating);
+            setFeedbackGiven(true);
+        }
+    };
 
     return (
         <div className={`message ${isUser ? "message-user" : "message-assistant"}`}>
@@ -75,6 +84,44 @@ export default function Message({ role, content, loading, error }) {
                             </div>
                         )}
                     </div>
+                    
+                    {/* Feedback Buttons */}
+                    {isAssistant && !loading && !error && (
+                        <div className="feedback-container">
+                            {!feedbackGiven ? (
+                                <>
+                                    <button 
+                                        className="feedback-button" 
+                                        onClick={() => handleFeedbackClick("Helpful")}
+                                        title="Helpful"
+                                    >
+                                        <ThumbsUp className="feedback-icon" size={16} />
+                                        <span>Helpful</span>
+                                    </button>
+                                    <button 
+                                        className="feedback-button" 
+                                        onClick={() => handleFeedbackClick("Not Helpful")}
+                                        title="Not Helpful"
+                                    >
+                                        <ThumbsDown className="feedback-icon" size={16} />
+                                        <span>Not Helpful</span>
+                                    </button>
+                                    <button 
+                                        className="feedback-button" 
+                                        onClick={() => handleFeedbackClick("Resolved Issue")}
+                                        title="Resolved Issue"
+                                    >
+                                        <CheckCircle className="feedback-icon" size={16} />
+                                        <span>Resolved Issue</span>
+                                    </button>
+                                </>
+                            ) : (
+                                <div className="feedback-thank-you">
+                                    <span>Thank you for your feedback!</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

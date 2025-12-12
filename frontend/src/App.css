@@ -4,7 +4,6 @@ body[data-theme="light"] {
     --tertiary-bg: #e5e7eb;
     --primary-text: #1f2937;
     --secondary-text: #4b5563;
-    /*--accent-green: #10b981;*/
     --accent-green: #00A62D;
     --accent-green-hover: #00A62D;
     --accent-red: #ef4444;
@@ -45,11 +44,17 @@ body[data-theme="dark"] {
     --link-hover-color: #3b82f6;
 }
 
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     font-family: 'Inter', sans-serif;
     color: var(--primary-text);
     background-color: var(--primary-bg);
+    height: 100vh;
+    overflow: hidden;
 }
 
 .app-container {

@@ -40,3 +40,9 @@ async def update_conversation_title(session_id: str, conversation_id: str, title
     logger.info(f"Updating conversation_id: {conversation_id} with title: {title}")
     conversations_repo.update_conversation_title(conversation_id, session_id, title)
     return {"message": "Conversation updated successfully"}
+
+@router.post("/conversations/feedback")
+async def submit_feedback(conversation_id: str, session_id: str, rating: str):
+    logger.info(f"Received feedback for conversation {conversation_id}: {rating}")
+    conversations_repo.update_latest_message_rating(conversation_id, session_id, rating)
+    return {"status": "success", "message": "Feedback submitted successfully"}
