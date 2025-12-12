@@ -105,6 +105,21 @@ async function deleteKnownIssue(issueId) {
     }
 }
 
+async function sendFeedback(conversationId, sessionId, rating) {
+    try {
+        const response = await axios.post(`${BASE_URL}/conversations/feedback`, null, {
+            params: {
+                conversation_id: conversationId,
+                session_id: sessionId,
+                rating: rating
+            }
+        });
+        return response.data;
+    } catch (error) {
+        throw new Error(`Failed to submit feedback: ${error.response?.status || error.message}`);
+    }
+}
+
 export default {
     sendChatMessage,
     getConversation,
@@ -116,5 +131,6 @@ export default {
     addKnownIssue,
     updateKnownIssue,
     deleteKnownIssue,
-    deleteAllConversations
+    deleteAllConversations,
+    sendFeedback
 };

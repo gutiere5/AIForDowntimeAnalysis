@@ -196,3 +196,43 @@ def update_conversation_title(conversation_id: str, session_id: str, new_title: 
         raise
 
 
+def update_latest_message_rating(conversation_id: str, session_id: str, rating: str):
+    logger.info(f"Updating latest assistant message rating for conversation {conversation_id} to '{rating}'")
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "SELECT 1 FROM conversations WHERE id = ? AND session_id = ?",
+            (conversation_id, session_id)
+        )
+        if cursor.fetchone() is None:
+             logger.warning(f"Unauthorized attempt to update rating for conversation {conversation_id} by session {session_id}")
+             conn.close()
+             raise Exception("Conversation not found or access denied.")
+
+        
+        cursor.execute(
+            "SELECT id FROM messages WHERE conversation_id = ? AND role = 'assistant' ORDER BY timestamp DESC LIMIT 1",
+            (conversation_id,)
+        )
+        row = cursor.fetchone()
+        if row is None:
+            logger.warning(f"No assistant message found to rate in conversation {conversation_id}")
+            conn.close()
+            return 
+
+        message_id = row['id']
+        
+        cursor.execute(
+            "UPDATE messages SET rating = ? WHERE id = ?",
+            (rating, message_id)
+        )
+        
+        conn.commit()
+        conn.close()
+        logger.info(f"Successfully updated rating for message {message_id}.")
+    except Exception as e:
+        logger.error(f"Failed to update rating for message in conversation {conversation_id}: {e}")
+        raise
+

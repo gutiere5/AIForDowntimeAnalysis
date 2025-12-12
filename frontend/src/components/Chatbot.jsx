@@ -106,6 +106,15 @@ export default function Chatbot({ sessionId, activeConversationId, onNewConversa
     }
   };
 
+  const handleFeedback = async (rating) => {
+      try {
+          await api.sendFeedback(activeConversationId, sessionId, rating);
+          console.log(`Feedback submitted: ${rating}`);
+      } catch (error) {
+          console.error("Error submitting feedback:", error);
+      }
+  };
+
   return (
     <div className="chat-content" data-name="Content">
       <div className="chat-content-inner">
@@ -124,7 +133,7 @@ export default function Chatbot({ sessionId, activeConversationId, onNewConversa
         ) : (
           <>
             {/* Messages Display */}
-            <ChatMessages messages={messages} />
+            <ChatMessages messages={messages} onFeedback={handleFeedback} />
 
             {/* Chat Input */}
             <div className="input-wrapper-fixed">

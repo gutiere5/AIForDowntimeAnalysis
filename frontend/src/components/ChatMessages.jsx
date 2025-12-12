@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import Message from "./Message";
 import "./ChatMessages.css";
 
-export default function ChatMessages({ messages }) {
+export default function ChatMessages({ messages, onFeedback }) {
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
   useEffect(() => {
@@ -25,6 +25,7 @@ export default function ChatMessages({ messages }) {
             content={message.content}
             loading={message.loading}
             error={message.error}
+            onFeedback={onFeedback}
           />
         ))}
         <div ref={messagesEndRef} />
