@@ -2,8 +2,14 @@ import axios from 'axios';
 
 const BASE_URL = "http://localhost:8000";
 
-async function sendChatMessage(user_query, conversation_id = null, session_id = null) {
-    const response = await fetch(`${BASE_URL}/agent/query?query=${user_query}&session_id=${session_id}&conversation_id=${conversation_id}`);
+async function sendChatMessage(user_query, conversation_id = null, session_id = null, model_id = null) {
+    const params = new URLSearchParams();
+    params.set('query', user_query);
+    params.set('session_id', session_id);
+    if (conversation_id) params.set('conversation_id', conversation_id);
+    if (model_id) params.set('model_id', model_id);
+
+    const response = await fetch(`${BASE_URL}/agent/query?${params.toString()}`);
     return response.body;
 }
 

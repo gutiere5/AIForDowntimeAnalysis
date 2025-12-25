@@ -4,6 +4,8 @@ import logging
 import os
 from dotenv import load_dotenv
 
+from backend.agents.llm_models.model_registry import DEFAULT_MODEL_ID, ALLOWED_MODEL_IDS
+
 def get_api_key():
     load_dotenv()
     token = os.getenv("HUGGINGFACE_API_TOKEN")
@@ -16,9 +18,16 @@ class HuggingFaceInferenceService:
     """
     A wrapper for the Hugging Face InferenceClient to standardize LLM calls.
     """
-    def __init__(self, model_id: str = "meta-llama/Llama-3.1-8B-Instruct"):
-        self.model_id = model_id
+
+    def __init__(self, model_id: str = DEFAULT_MODEL_ID):
+        self.model_id = model_id or DEFAULT_MODEL_ID
         self.logger = logging.getLogger(__name__)
+
+        if self.model_id not in ALLOWED_MODEL_IDS:
+            raise ValueError(
+                f"Unsupported model_id '{self.model_id}'. Allowed: {sorted(ALLOWED_MODEL_IDS)}"
+            )
+
         self.api_key = get_api_key()
         try:
             self.client = InferenceClient(model=self.model_id, api_key=self.api_key)

@@ -71,6 +71,32 @@
     margin: 0;
 }
 
+.model-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.model-selector--in-chat {
+    padding: 12px 24px 0 24px;
+    margin-bottom: 0;
+}
+
+.model-selector-label {
+    font-size: 14px;
+    color: var(--secondary-text);
+}
+
+.model-selector-select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--tertiary-bg);
+    color: var(--primary-text);
+}
+
 .title {
     display: inline-grid;
     grid-template-columns: max-content;

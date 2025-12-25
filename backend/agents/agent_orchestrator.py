@@ -1,4 +1,5 @@
 from backend.agents.llm_models.huggingface_inference_client import HuggingFaceInferenceService
+from backend.agents.llm_models.model_registry import DEFAULT_MODEL_ID
 from backend.agents.utils.orchestrator_prompt import ORCHESTRATOR_PROMPT_TEMPLATE, EXAMPLES, PLAN_SCHEMA
 from typing import Dict, Any
 import logging
@@ -8,8 +9,8 @@ import datetime
 
 
 class AgentOrchestrator:
-    def __init__(self):
-        self.llm_service = HuggingFaceInferenceService()
+    def __init__(self, model_id: str = None):
+        self.llm_service = HuggingFaceInferenceService(model_id=model_id or DEFAULT_MODEL_ID)
         self.logger = logging.getLogger(__name__)
 
     def get_plan_from_orchestrator(self, user_query: str, conversation_history: list = None) -> Dict[str, Any]:

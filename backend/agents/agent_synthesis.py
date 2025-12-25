@@ -1,4 +1,5 @@
 from backend.agents.llm_models.huggingface_inference_client import HuggingFaceInferenceService
+from backend.agents.llm_models.model_registry import DEFAULT_MODEL_ID
 from backend.repositories.sql_databases.conversations_repo import add_message
 from backend.agents.utils.synthesizer_prompt import SYNTHESIZER_PROMPT_TEMPLATE
 from backend.agents.utils.schemas import RequestContext
@@ -7,9 +8,9 @@ import json
 
 
 class AgentSynthesis:
-    def __init__(self):
+    def __init__(self, model_id: str = None):
         self.logger = logging.getLogger(__name__)
-        self.llm_service = HuggingFaceInferenceService()
+        self.llm_service = HuggingFaceInferenceService(model_id=model_id or DEFAULT_MODEL_ID)
 
     def stream_final_response(self, query: str, data: dict, context: RequestContext, conversation_history: list = None):
         system_prompt = SYNTHESIZER_PROMPT_TEMPLATE

@@ -12,13 +12,14 @@ from backend.agents.agent_synthesis import AgentSynthesis
 
 
 class MainAgent:
-    def __init__(self):
+    def __init__(self, model_id: str = None):
         self.logger = logging.getLogger(__name__)
         self.name = "MainAgent"
-        self.agent_orchestrator = AgentOrchestrator()
+        self.model_id = model_id
+        self.agent_orchestrator = AgentOrchestrator(model_id=model_id)
         self.agent_retrieval = AgentRetrieval()
         self.agent_analysis = AgentAnalysis()
-        self.agent_synthesizer = AgentSynthesis()
+        self.agent_synthesizer = AgentSynthesis(model_id=model_id)
 
     def process_query(self, query: str, context: RequestContext) -> Generator[str, None, None]:
         agent_name_in_error = None

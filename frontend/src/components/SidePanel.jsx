@@ -183,12 +183,13 @@ export default function SidePanel({ conversations, activeConversationId, setActi
                         <ExternalLink className="bottom-icon" />
                         <span>Updates</span>
                     </button>
-                    */}
+                    
 
                     <button className="bottom-button logout">
                         <Power className="bottom-icon" />
                         <span>Log out</span>
                     </button>
+                   */}
                 </div>
             </div>
             {/* <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} /> */}

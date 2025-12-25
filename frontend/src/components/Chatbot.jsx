@@ -7,7 +7,14 @@ import "./Chatbot.css";
 
 export default function Chatbot({ sessionId, activeConversationId, onNewConversation }) {
   const [messages, setMessages] = useState([]);
+  const [selectedModel, setSelectedModel] = useState("meta-llama/Llama-3.1-8B-Instruct");
   const firstTokenRef = useRef(false);
+
+  const models = [
+    { id: "meta-llama/Llama-3.1-8B-Instruct", name: "meta-llama/Llama-3.1-8B-Instruct" },
+    { id: "dphn/Dolphin-Mistral-24B-Venice-Edition", name: "dphn/Dolphin-Mistral-24B-Venice-Edition" },
+    { id: "google/gemma-2-9b-it", name: "google/gemma-2-9b-it" },
+  ];
 
   useEffect(() => {
     if (activeConversationId) {
@@ -38,7 +45,8 @@ export default function Chatbot({ sessionId, activeConversationId, onNewConversa
       const stream = await api.sendChatMessage(
         trimmedMessage,
         activeConversationId,
-        sessionId
+        sessionId,
+        selectedModel
       );
 
       let newConvoId = null;
@@ -126,12 +134,46 @@ export default function Chatbot({ sessionId, activeConversationId, onNewConversa
                 <p className="title-text">Welcome to ChatBot</p>
               </div>
             </div>
+
+            <div className="model-selector">
+              <label className="model-selector-label" htmlFor="model-select">Model</label>
+              <select
+                id="model-select"
+                className="model-selector-select"
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value)}
+              >
+                {models.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="input-wrapper-centered">
               <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
             </div>
           </div>
         ) : (
           <>
+            <div className="model-selector model-selector--in-chat">
+              <label className="model-selector-label" htmlFor="model-select">Model</label>
+              <select
+                id="model-select"
+                className="model-selector-select"
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value)}
+                disabled={isLoading}
+              >
+                {models.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* Messages Display */}
             <ChatMessages messages={messages} onFeedback={handleFeedback} />
 
