@@ -13,12 +13,12 @@ Unlike simple chatbots, this system utilizes a **RAG (Retrieval-Augmented Genera
 
 ## Screenshots
 <div align="center">
-  <img src="docs/home.png" alt="Chat Interface" width="1000" />
+  <img src="docs/Home.png" alt="Chat Interface" width="1000" />
   <p><em>The intuitive chat interface built with React</em></p>
 </div>
 
 <div align="center">
-  <img src="docs/demo.gif" alt="Chat Interface Demo" width="1000" />
+  <img src="docs/Demo.gif" alt="Chat Interface Demo" width="1000" />
   <p><em>Demo of "how to fix a sensor belt issue"</em></p>
 </div>
 
