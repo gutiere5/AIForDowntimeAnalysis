@@ -9,13 +9,18 @@
 
 Unlike simple chatbots, this system utilizes a **RAG (Retrieval-Augmented Generation)** pipeline and an **Agentic Workflow** to dynamically plan, retrieve specific logs, analyze data using Python tools, and synthesize answers.
 
----
+
 
 ## Screenshots
+<div align="center">
+  <img src="docs/home.png" alt="Chat Interface" width="1000" />
+  <p><em>The intuitive chat interface built with React</em></p>
+</div>
 
-![Dashboard Preview](docs/screenshot_placeholder.png)
-
----
+<div align="center">
+  <img src="docs/demo.gif" alt="Chat Interface Demo" width="1000" />
+  <p><em>Demo of "how to fix a sensor belt issue"</em></p>
+</div>
 
 ## System Architecture
 
@@ -41,27 +46,28 @@ This project implements a sophisticated **Multi-Agent Architecture** (`backend/a
 * **State Management:** Immer / React Hooks
 * **Communication:** Server-Sent Events (SSE) for real-time agent streaming
 
----
 
 ## Getting Started
-
 ### Prerequisites
 * Node.js (v18 or higher)
 * Python (v3.10 or higher)
 
 ### 1. Backend Setup
 
-navigate to the backend folder and install the dependencies:
+navigate to the backend folder, create virtual Environment, and install the dependencies:
 ```bash
 cd backend
+python3 -m venv aidowntime
+source venv/bin/activate
 pip install -r requirements.txt
+
+# Seed the Database and Start the API Server
+# Provided dummy data
+python -m repositories.vector_chroma_db.run_and_seed_db
+uvicorn main:app --reload --port 8000
 ```
-Seed the Database and Start the API Server
-``` bash
-# Run from the repository root
-python -m backend.repositories.vector_chroma_db.run_and_seed_db
-uvicorn backend.main:app --reload --port 8000
-```
+To make queries to the app a huggingface token will be required in .env and permission to the llm models of choice through huggingface.
+
 ---
 
 ### 2. Frontend Setup
@@ -74,8 +80,6 @@ npm install
 npm run dev
 # Open your browser to http://localhost:5173
 ```
-
----
 
 ## Project Structure
 ```
@@ -91,12 +95,12 @@ npm run dev
 │   │   └── assets/             # SSE parsing and API utilities
 
 ```
----
-## Features
-- Semantic Search: Find downtime incidents by describing the problem (e.g., "What cause the downtime on Line 3?").
-- Structured Analysis: The AI doesn't just guess; it calculates downtime totals and frequency based on actual downtime data.
-- Known Issues Knowledge Base: Maintain a database of solutions for common errors.
-- Streaming Responses: Real-time token streaming for a responsive UI experience.
+
+## Agentic Architecture
+<div align="center">
+  <img src="docs/AgenticArchitecture.png" alt="Chat Interface Demo" width="1000" height="600" />
+  <p><em>The agentic architecture</em></p>
+</div>
 
 
 

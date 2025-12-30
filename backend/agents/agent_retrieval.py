@@ -1,4 +1,4 @@
-from backend.repositories.vector_chroma_db.chroma_client import ChromaClient
+from repositories.vector_chroma_db.chroma_client import ChromaClient
 import logging
 
 

@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter, HTTPException, Response, status
-from backend.repositories.sql_databases import known_issues_repo
-from backend.repositories.vector_chroma_db.chroma_client import ChromaClient
+from repositories.sql_databases import known_issues_repo
+from repositories.vector_chroma_db.chroma_client import ChromaClient
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

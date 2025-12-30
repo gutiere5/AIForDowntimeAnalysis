@@ -1,10 +1,10 @@
 from fastapi import FastAPI
-from backend.repositories.sql_databases.databases import initialize_database
+from repositories.sql_databases.databases import initialize_database
 import uvicorn
 import logging
 
 from fastapi.middleware.cors import CORSMiddleware
-from backend.api.router import api_router
+from api.router import api_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

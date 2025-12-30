@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from backend.api.endpoints import agent, health, conversations, known_issues
+from api.endpoints import agent, health, conversations, known_issues
 
 api_router = APIRouter()
 

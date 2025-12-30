@@ -141,7 +141,7 @@ class AgentAnalysis:
 
                 incidents_df = incidents_df.rename(columns={
                     'Downtime Minutes': 'minutes',
-                    'Notes': 'note',
+                    'documents': 'note',
                     'Line': 'line',
                     'Timestamp': 'timestamp'
                 })

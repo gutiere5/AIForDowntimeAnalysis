@@ -1,6 +1,6 @@
 import logging
 import uuid
-from backend.repositories.sql_databases.databases import get_db_connection
+from repositories.sql_databases.databases import get_db_connection
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

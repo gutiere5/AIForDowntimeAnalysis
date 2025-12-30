@@ -6,7 +6,7 @@ import os
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DATABASE_URL = os.path.join(os.path.dirname(__file__), 'conversations.db')
+DATABASE_URL = './conversations.db'
 
 def get_db_connection():
     logger.info(f"Database connection established. {DATABASE_URL}")

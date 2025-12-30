@@ -1,8 +1,8 @@
-from backend.agents.llm_models.huggingface_inference_client import HuggingFaceInferenceService
-from backend.agents.llm_models.model_registry import DEFAULT_MODEL_ID
-from backend.repositories.sql_databases.conversations_repo import add_message
-from backend.agents.utils.synthesizer_prompt import SYNTHESIZER_PROMPT_TEMPLATE
-from backend.agents.utils.schemas import RequestContext
+from agents.llm_models.huggingface_inference_client import HuggingFaceInferenceService
+from agents.llm_models.model_registry import DEFAULT_MODEL_ID
+from repositories.sql_databases.conversations_repo import add_message
+from agents.utils.synthesizer_prompt import SYNTHESIZER_PROMPT_TEMPLATE
+from agents.utils.schemas import RequestContext
 import logging
 import json
 
