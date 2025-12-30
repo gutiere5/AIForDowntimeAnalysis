@@ -4,7 +4,7 @@ import logging
 import os
 from dotenv import load_dotenv
 
-from backend.agents.llm_models.model_registry import DEFAULT_MODEL_ID, ALLOWED_MODEL_IDS
+from agents.llm_models.model_registry import DEFAULT_MODEL_ID, ALLOWED_MODEL_IDS
 
 def get_api_key():
     load_dotenv()

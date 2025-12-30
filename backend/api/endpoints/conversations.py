@@ -1,6 +1,6 @@
 import logging
 from fastapi import APIRouter
-from backend.repositories.sql_databases import conversations_repo
+from repositories.sql_databases import conversations_repo
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

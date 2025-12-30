@@ -2,9 +2,9 @@ import logging
 import uuid
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from backend.agents.main_agent import MainAgent
-from backend.agents.llm_models.model_registry import DEFAULT_MODEL_ID, ALLOWED_MODEL_IDS
-from backend.agents.utils.schemas import RequestContext
+from agents.main_agent import MainAgent
+from agents.llm_models.model_registry import DEFAULT_MODEL_ID, ALLOWED_MODEL_IDS
+from agents.utils.schemas import RequestContext
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

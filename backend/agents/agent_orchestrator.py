@@ -1,6 +1,6 @@
-from backend.agents.llm_models.huggingface_inference_client import HuggingFaceInferenceService
-from backend.agents.llm_models.model_registry import DEFAULT_MODEL_ID
-from backend.agents.utils.orchestrator_prompt import ORCHESTRATOR_PROMPT_TEMPLATE, EXAMPLES, PLAN_SCHEMA
+from agents.llm_models.huggingface_inference_client import HuggingFaceInferenceService
+from agents.llm_models.model_registry import DEFAULT_MODEL_ID
+from agents.utils.orchestrator_prompt import ORCHESTRATOR_PROMPT_TEMPLATE, EXAMPLES, PLAN_SCHEMA
 from typing import Dict, Any
 import logging
 import json

@@ -2,13 +2,13 @@ from typing import Generator
 import json
 import logging
 import pandas as pd
-from backend.agents.utils.schemas import RequestContext
-from backend.agents.utils.date_converter import convert_dates_in_plan
-from backend.repositories.sql_databases import conversations_repo
-from backend.agents.agent_orchestrator import AgentOrchestrator
-from backend.agents.agent_retrieval import AgentRetrieval
-from backend.agents.agent_analysis import AgentAnalysis
-from backend.agents.agent_synthesis import AgentSynthesis
+from agents.utils.schemas import RequestContext
+from agents.utils.date_converter import convert_dates_in_plan
+from repositories.sql_databases import conversations_repo
+from agents.agent_orchestrator import AgentOrchestrator
+from agents.agent_retrieval import AgentRetrieval
+from agents.agent_analysis import AgentAnalysis
+from agents.agent_synthesis import AgentSynthesis
 
 
 class MainAgent:

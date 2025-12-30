@@ -1,6 +1,6 @@
 import pandas as pd
-from backend.repositories.vector_chroma_db.clean_data import clean_data
-from backend.repositories.vector_chroma_db.chroma_client import ChromaClient
+from repositories.vector_chroma_db.clean_data import clean_data
+from repositories.vector_chroma_db.chroma_client import ChromaClient
 
 
 def run_and_seed_db():
@@ -8,7 +8,7 @@ def run_and_seed_db():
     columns_to_use = ['Timestamp', 'Downtime Minutes', 'Notes', 'Line']
     print("Reading CSV file...")
     try:
-        csv_path = 'backend/data/downtime_logs.csv'
+        csv_path = 'data/downtime_logs.csv'
         df = pd.read_csv(csv_path, usecols=columns_to_use)
     except FileNotFoundError:
         print(f"CSV file not found at {csv_path}. Please ensure 'backend/data/downtime_logs.csv' exists.")
@@ -21,7 +21,7 @@ def run_and_seed_db():
     cleaned_data = clean_data(df)
 
     print("Seeding database...")
-    chroma_client = ChromaClient(collection_name="downtime_logs", path="../chroma_db")
+    chroma_client = ChromaClient(collection_name="downtime_logs", path="./chroma_db")
     cleaned_data['Timestamp_unix'] = cleaned_data['Timestamp'].apply(
         lambda x: int(x.timestamp() if isinstance(x, pd.Timestamp) else int(x)))
     cleaned_data['Timestamp'] = cleaned_data['Timestamp'].astype(str)
