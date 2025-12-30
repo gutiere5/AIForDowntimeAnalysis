@@ -24,7 +24,11 @@ Unlike simple chatbots, this system utilizes a **RAG (Retrieval-Augmented Genera
 
 ## System Architecture
 
-This project implements a sophisticated **Multi-Agent Architecture** (`backend/agents/`) to handle complex queries.
+This project implements a **Multi-Agent Architecture** (`backend/agents/`) to handle complex queries.
+<div align="center">
+  <img src="docs/AgenticArchitecture.png" alt="Chat Interface Demo" width="1000" height="600" />
+  <p><em>The agentic architecture</em></p>
+</div>
 
 ### The Agent Workflow
 1.  **Agent Orchestrator:** Uses an LLM to parse natural language into a structured execution plan (e.g., "Find logs from last week" $\rightarrow$ "Calculate top 3 errors").
@@ -96,11 +100,6 @@ npm run dev
 
 ```
 
-## Agentic Architecture
-<div align="center">
-  <img src="docs/AgenticArchitecture.png" alt="Chat Interface Demo" width="1000" height="600" />
-  <p><em>The agentic architecture</em></p>
-</div>
 
 
 
